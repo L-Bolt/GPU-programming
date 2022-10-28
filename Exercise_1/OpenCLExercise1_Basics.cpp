@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 	//TODO
 	kernel1.setArg(0, d_input);
 	kernel1.setArg(1, d_output);
-	kernel1.setArg(2, size);
+	kernel1.setArg(2, count);
 	Core::TimeSpan memory_end = Core::getCurrentTime();
 
 	cl::Event kernel_event; // Event to measure Kernel time
