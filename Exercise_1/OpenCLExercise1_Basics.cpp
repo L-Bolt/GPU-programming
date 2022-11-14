@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 	cl::CommandQueue queue(context, device, CL_QUEUE_PROFILING_ENABLE);
 
 	// Load the source code
-	cl::Program program = OpenCL::loadProgramSource(context, "/home/lb/Desktop/Exercise 1/For Linux/Opencl-Basics-Linux/src/OpenCLExercise1_Basics.cl");
+	cl::Program program = OpenCL::loadProgramSource(context, "/home/lb/Desktop/GPU-programming/Exercise_1/src/OpenCLExercise1_Basics.cl");
 	// Compile the source code. This is similar to program.build(devices) but will print more detailed error messages
 	OpenCL::buildProgram(program, devices);
 	std::cout << "program built" << std::endl;
