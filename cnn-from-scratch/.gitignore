@@ -40,3 +40,11 @@
 
 # mac file
 .DS_Store
+*.cmake
+CMakeCache.txt
+*.out
+test-cnn
+*cnn
+data/mnist_png/
+CMakeFiles
+Makefile

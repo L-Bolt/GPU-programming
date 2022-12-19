@@ -3,6 +3,8 @@
 
 #include "Matrix.h"
 #include <random>
+#include <memory>
+#include <algorithm>
 
 // utility variables and methods
 
