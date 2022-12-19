@@ -14,7 +14,7 @@
 using namespace std;
 
 int seed = time(0);
-std::default_random_engine random_engine(seed); 
+std::default_random_engine random_engine(seed);
 
 namespace fns{
 	double relu(double x){
@@ -44,13 +44,13 @@ namespace fns{
 }
 
 namespace pre_process{
-	int process_mnist_images(const char* path, std::vector<std::unique_ptr<Matrix> > &Xtrain, 
+	int process_mnist_images(const char* path, std::vector<std::unique_ptr<Matrix> > &Xtrain,
 		std::vector<std::unique_ptr<std::vector<double> > > &Ytrain, unsigned int nr_images){
 		std::string str(path);	// convert char* to string
 		const int width = 28;
 		const int height = 28;
 		const int LABELS = 10;
-	
+
 		for(unsigned int i=0; i < LABELS; i++){
 			std::vector<cv::String> files;	// vector of strings to store file names
 			cv::glob(path + std::to_string(i), files, true);
@@ -65,15 +65,15 @@ namespace pre_process{
 					}
 				}
 				Xtrain.emplace_back(std::move(image));
-				std::unique_ptr<std::vector<double> > vr = std::make_unique<std::vector<double> >(LABELS, 0);				
+				std::unique_ptr<std::vector<double> > vr = std::make_unique<std::vector<double> >(LABELS, 0);
 				(*vr)[i] = 1.0;
 				Ytrain.emplace_back(std::move(vr));
 			}
 		}
 		return 0;
 	}
-	
-	int process_mnist_csv(const char* filename, std::vector<std::vector<double> > &Xtrain, 
+
+	int process_mnist_csv(const char* filename, std::vector<std::vector<double> > &Xtrain,
 		std::vector<std::vector<double> > &Ytrain){
 		std::string data(filename);
 		ifstream in(data.c_str());
@@ -106,7 +106,7 @@ namespace pre_process{
 		cout << "processed the input file" << endl;
 		return 0;
 	}
-	
+
 	void process_image(const char* filename){
 		std::vector<double> image;
 		cv::Mat img = cv::imread(filename);

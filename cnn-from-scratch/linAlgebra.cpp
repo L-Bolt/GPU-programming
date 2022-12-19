@@ -34,9 +34,9 @@ namespace np{
 		}
 		return m3;
 	}
-	
+
 	// hadamard product of vectors
-	std::unique_ptr<std::vector<double> > multiply(std::unique_ptr<std::vector<double> > &v1, 
+	std::unique_ptr<std::vector<double> > multiply(std::unique_ptr<std::vector<double> > &v1,
 				std::unique_ptr<std::vector<double> > &v2){
 		assert(v1->size() == v2->size());
 		std::unique_ptr<std::vector<double> > vr = std::make_unique<std::vector<double> >();
@@ -60,7 +60,7 @@ namespace np{
 	}
 
 	// dot product between two matrices
-	std::unique_ptr<Matrix> dot(std::unique_ptr<Matrix> & m1, std::unique_ptr<Matrix> & m2, 
+	std::unique_ptr<Matrix> dot(std::unique_ptr<Matrix> & m1, std::unique_ptr<Matrix> & m2,
 								unsigned int slice){
 		assert(m1->getColumns() == m2->getRows());
 
@@ -91,9 +91,9 @@ namespace np{
 		}
 		return vr;
 	}
-	
+
 	// dot product of 2 vectors returning a Rank 1 Matrix
-	std::unique_ptr<Matrix> dot(std::unique_ptr<std::vector<double> > & v1, 
+	std::unique_ptr<Matrix> dot(std::unique_ptr<std::vector<double> > & v1,
 								std::unique_ptr<std::vector<double> > & v2, unsigned int v2_slice){
 		std::unique_ptr<Matrix> m3(new Matrix(v1->size(), v2->size() - v2_slice, true));
 		for(unsigned int i=0; i < m3->getRows(); i++){
@@ -131,7 +131,7 @@ namespace np{
 	}
 
 	// subtraction (of vectors)
-	std::unique_ptr<std::vector<double> > subtract(std::unique_ptr<std::vector<double> > & v1, 
+	std::unique_ptr<std::vector<double> > subtract(std::unique_ptr<std::vector<double> > & v1,
 														std::unique_ptr<std::vector<double> > & v2){
 		assert(v1->size() == v2->size());
 
@@ -165,9 +165,9 @@ namespace np{
 		}
 		return m3;
 	}
-	
-	// apply a function to every element of the vector 
-	std::unique_ptr<std::vector<double> > applyFunction(std::unique_ptr<std::vector<double> > &v, 
+
+	// apply a function to every element of the vector
+	std::unique_ptr<std::vector<double> > applyFunction(std::unique_ptr<std::vector<double> > &v,
 								double (*active_fn)(double)){
 		std::unique_ptr<std::vector<double> > vr = std::make_unique<std::vector<double> >();
 		for(unsigned int i=0; i < v->size(); i++){
@@ -182,7 +182,7 @@ namespace np{
 		return vr;
 	}
 
-	// concatenate matrices 
+	// concatenate matrices
 	std::unique_ptr<Matrix> concatenate(std::unique_ptr<Matrix> & m1, std::unique_ptr<Matrix> & m2){
 		assert(m1->getRows() == m2->getRows());
 
@@ -197,7 +197,7 @@ namespace np{
 		}
 		return m3;
 	}
-	
+
 	// concatenate matrix with a vector as additional column
 	std::unique_ptr<Matrix> concatenate(std::unique_ptr<Matrix> & m1, std::vector<double> & v){
 		assert(m1->getRows() == v.size());
@@ -211,7 +211,7 @@ namespace np{
 		}
 		return m3;
 	}
-	
+
 	// normalize a matrix such that sum of each row is 1
 	std::unique_ptr<Matrix> normalize(std::unique_ptr<Matrix> & m1){
 		std::unique_ptr<Matrix> m3(new Matrix(m1->getRows(), m1->getColumns(), true));
@@ -227,7 +227,7 @@ namespace np{
 		}
 		return m3;
 	}
-	
+
 	// normalize a vector such that sum of all elements is 1
 	std::unique_ptr<std::vector<double> > normalize(std::unique_ptr<std::vector<double> > &v){
 		std::unique_ptr<std::vector<double> > vr = std::make_unique<std::vector<double> >();
@@ -241,7 +241,7 @@ namespace np{
 		}
 		return vr;
 	}
-	
+
 	// return sum of all elements in matrix
 	double element_sum(std::unique_ptr<Matrix> & m1){
 		double sum = 0;
@@ -259,9 +259,9 @@ namespace np{
 		for(unsigned int i=0; i < v->size(); i++){
 			sum += v->at(i);
 		}
-		return sum;	
+		return sum;
 	}
-	
+
 	// flatten the matrix. convert 2D matrix to 1D vector
 	std::unique_ptr<std::vector<double> > flatten(std::unique_ptr<Matrix> & m1){
 		std::unique_ptr<std::vector<double> > v(new std::vector<double>(m1->getRows() * m1->getColumns()));
@@ -273,10 +273,10 @@ namespace np{
 		}
 		return v;
 	}
-	
+
 	// return the maximum of matrix within the boundaries specified by (xptr, yptr, window)
 	// set the index of maximum element in index variable
-	double maximum(std::unique_ptr<Matrix> & m1, unsigned int xptr, unsigned int yptr, 
+	double maximum(std::unique_ptr<Matrix> & m1, unsigned int xptr, unsigned int yptr,
 					Shape window, std::unique_ptr<Shape> &index){
 		assert(xptr + window.rows <= m1->getRows() && yptr + window.columns <= m1->getColumns());
 
@@ -289,7 +289,7 @@ namespace np{
 					max = m1->get(i,j);
 					index->rows = i;
 					index->columns = j;
-				}	
+				}
 				j++;
 			}
 			i++;

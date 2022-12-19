@@ -9,7 +9,7 @@
 using namespace std;
 
 int test_applyFunction(){
-	
+
 	// declare a Matrix object
 	int rows = 3; // set number of rows
 	int columns = 2; // set number of columns
@@ -85,7 +85,7 @@ int test_dot(){
 	std::unique_ptr<std::vector<double> > v = std::make_unique<std::vector<double> >();
 	v->push_back(1);
 	v->push_back(1);
-	
+
 	std::unique_ptr<std::vector<double> > v1 = np::dot(A,v);
 
 	A->pretty_print();
@@ -97,8 +97,8 @@ int test_dot(){
 	return 0;
 }
 
-int main(){
-	test_applyFunction();	
+int main() {
+	test_applyFunction();
 	test_flatten();
 	test_multiply();
 	test_maximum();

@@ -17,7 +17,7 @@ Matrix::Matrix(int rows, int columns, bool init){
 	this -> rows = rows;
 	this -> columns = columns;
 	this -> array = vector<vector <double> >(rows, vector<double>(columns));
-	
+
 	int factor = 0;
 	if (init) factor=1;
 	// initialize Matrix using random numbers
@@ -25,7 +25,7 @@ Matrix::Matrix(int rows, int columns, bool init){
 	for(unsigned int i = 0; i < rows; i++){
 		for(unsigned int j = 0; j < columns; j++){
 			double a = unif(random_engine);
-			this -> array[i][j] = (a * factor);	
+			this -> array[i][j] = (a * factor);
 		}
 	}
 }

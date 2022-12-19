@@ -7,7 +7,7 @@
 // utility variables and methods
 
 // random double generator
-extern std::default_random_engine random_engine; 
+extern std::default_random_engine random_engine;
 
 // struct datastructure used for storing 2D shape
 struct Shape{
@@ -26,10 +26,10 @@ namespace fns{
 }
 
 namespace pre_process{
-	int process_mnist_images(const char* path, std::vector<std::unique_ptr<Matrix> > &Xtrain, 
+	int process_mnist_images(const char* path, std::vector<std::unique_ptr<Matrix> > &Xtrain,
 		std::vector<std::unique_ptr<std::vector<double> > > &Ytrain, unsigned int nr_images=100);
-	int process_mnist_csv(const char* filename, std::vector<std::vector<double> > &Xtrain, 
-		std::vector<std::vector<double> > &Ytrain) ;
+	int process_mnist_csv(const char* filename, std::vector<std::vector<double> > &Xtrain,
+		std::vector<std::vector<double> > &Ytrain);
 	void process_image(const char* filename);
 }
 
