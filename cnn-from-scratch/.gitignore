@@ -1,50 +1,30 @@
-# Prerequisites
 *.d
-
-# Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-
-# Precompiled Headers
 *.gch
 *.pch
-
-# Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
 *.mod
 *.smod
-
-# Compiled Static libraries
 *.lai
 *.la
 *.a
 *.lib
-
-# Executables
 *.exe
 *.out
 *.app
-
-
-# swp files
 .*.swp
-
-# data files
 *.csv
-
-# mac file
 .DS_Store
 *.cmake
 CMakeCache.txt
-*.out
 test-cnn
 *cnn
 data/mnist_png/
 CMakeFiles
 Makefile
+.vscode
