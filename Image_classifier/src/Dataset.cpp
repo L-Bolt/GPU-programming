@@ -6,8 +6,6 @@
  */
 Dataset::Dataset(std::string path) {
     this->path = path;
-    this->dataset_size = 10000 * 3073;
-    this->size_per_image = 3073;
 
     this->buffer = make_buffer(this->path);
 }
@@ -43,7 +41,7 @@ void Dataset::display_all_images() {
     for (std::vector<uint8_t> img_data : splitted) {
         size_t img_data_size = img_data.size();
         Image img(img_data);
-        std::cout << this->classes[(int) img.classifier] << std::endl;
+        std::cout << this->classes[img.get_class()] << std::endl;
         img.display_image();
     }
 }

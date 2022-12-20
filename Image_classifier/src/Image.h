@@ -5,13 +5,14 @@
 
 class Image {
     public:
-        uint8_t classifier;
         Image(std::vector<uint8_t> &data);
 
         static std::vector<std::vector<uint8_t>> split_vector(std::vector<uint8_t> &vec, size_t n);
         void display_image();
+        short get_class();
 
     private:
         std::vector<uint8_t> data;
+        uint8_t classifier;
 
 };

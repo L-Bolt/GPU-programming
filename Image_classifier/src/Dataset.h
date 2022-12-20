@@ -16,8 +16,8 @@ class Dataset {
 
     private:
         std::string path;
-        size_t dataset_size;
-        size_t size_per_image;
+        size_t dataset_size = 10000 * 3073;
+        size_t size_per_image = 3073;
         std::vector<uint8_t> buffer;
 
         std::string files[5] = {
@@ -42,5 +42,4 @@ class Dataset {
         };
 
         std::vector<uint8_t> make_buffer(std::string& path);
-        std::vector<uint8_t> read_file(std::string binary_file_path);
 };

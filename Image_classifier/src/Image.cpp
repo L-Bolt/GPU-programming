@@ -21,6 +21,10 @@ void Image::display_image() {
 
 }
 
+short Image::get_class() {
+    return (short) this->classifier;
+}
+
 /**
  * @brief Split a vector in n equal parts.
  *
