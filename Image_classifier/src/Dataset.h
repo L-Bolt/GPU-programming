@@ -1,26 +1,24 @@
 #include <string>
 #include <fstream>
-#include <string.h>
 #include <iostream>
-#include <bitset>
+#include <string.h>
+#include <vector>
+
+#include "Image.h"
+
 
 class Dataset {
     public:
         Dataset(std::string path);
-        ~Dataset();
+        ~Dataset() = default;
 
-        bool error = false;
-
-        void dprint(std::string print) {
-            std::cout << print << std::endl;
-        }
-
+        void display_all_images();
 
     private:
         std::string path;
         size_t dataset_size;
         size_t size_per_image;
-        uint8_t *buffer;
+        std::vector<uint8_t> buffer;
 
         std::string files[5] = {
             "data_batch_1.bin",
@@ -43,5 +41,6 @@ class Dataset {
             "truck"
         };
 
-        uint8_t *make_buffer(std::string& path);
+        std::vector<uint8_t> make_buffer(std::string& path);
+        std::vector<uint8_t> read_file(std::string binary_file_path);
 };

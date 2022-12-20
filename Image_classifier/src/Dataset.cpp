@@ -13,46 +13,37 @@ Dataset::Dataset(std::string path) {
 }
 
 /**
- * Destructor for the dataset.
- * Automatically frees the buffer when the dataset goes out of scope or when
- * the program terminates.
- */
-Dataset::~Dataset() {
-    free(this->buffer);
-    std::cout << "freed dataset buffer" << std::endl;
-}
-
-/**
- * Creates a large buffer with enough space for all the images in the entire
+ * Creates a buffer with enough space for all the images in the entire
  * dataset.
  */
-uint8_t *Dataset::make_buffer(std::string& path) {
-    // Allocate the arena in which the data of all images will be stored.
-    // Buffer needs to be initialized to a char* because the ifstream.read()
-    // function does not overload for unsigned chars (1 byte unsigned integers).
-    char* buffer = (char*) malloc(5 * this->dataset_size);
-    memset(buffer, 5 * this->dataset_size, 0);
-
-    if (!buffer) {
-        this->error = true;
-        return NULL;
-    }
+std::vector<uint8_t> Dataset::make_buffer(std::string& path) {
+    // Allocate buffer vector
+    std::vector<uint8_t> buffer(5 * this->dataset_size);
 
     // Read all 5 binary files containing the dataset.
     for (int i = 0; i < 5; i++) {
-        size_t offset = i * dataset_size;
-
+        size_t offset = i * this->dataset_size;
         std::string binary_file_path = this->path + '/' + this->files[i];
-        std::ifstream input(binary_file_path, std::ios::binary);
 
-        if (!input) {
-            this->error = true;
-            return NULL;
-        }
-
-        // Copy the contents from the file to the buffer at offset.
-        input.read(&buffer[offset], this->dataset_size);
+        std::ifstream file(binary_file_path, std::ios::binary);
+        file.read(reinterpret_cast<char*>(buffer.data() + offset), this->dataset_size);
     }
 
-    return (uint8_t*) buffer;
+    return buffer;
+}
+
+/**
+ * Creates images out of all the data in the buffer and calls the function to
+ * display the image.
+ */
+void Dataset::display_all_images() {
+    std::vector<std::vector<uint8_t>> splitted = Image::split_vector(this->buffer, 5 * 10000);
+    size_t splitted_size = splitted.size();
+
+    for (std::vector<uint8_t> img_data : splitted) {
+        size_t img_data_size = img_data.size();
+        Image img(img_data);
+        std::cout << this->classes[(int) img.classifier] << std::endl;
+        img.display_image();
+    }
 }
