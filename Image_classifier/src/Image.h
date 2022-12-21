@@ -2,6 +2,7 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 
+#define CIFAR_IMAGE_SIZE 32
 
 class Image {
     public:
@@ -15,5 +16,7 @@ class Image {
     private:
         std::vector<uint8_t> data;
         uint8_t classifier;
+
+        cv::Mat array_to_cv_mat();
 
 };

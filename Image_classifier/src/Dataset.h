@@ -11,6 +11,12 @@
 #include "util.h"
 #include "Image.h"
 
+#define CIFAR_CLASSES 10
+#define CIFAR_IMAGE_COUNT 60000
+#define CIFAR_FILES 6
+#define CIFAR_IMAGES_PER_FILE 10000
+#define CIFAR_BIN_FILE_SIZE 3073 * 10000
+
 class Dataset {
     public:
         Dataset(std::string path);
@@ -21,13 +27,11 @@ class Dataset {
         std::vector<uint8_t> &get_image_data(int &index);
 
     private:
-        size_t dataset_size = 10000 * 3073;
-        size_t size_per_image = 3073;
         std::vector<std::vector<uint8_t>> buffer;
         std::vector<std::vector<uint8_t>> training_set;
         std::vector<std::vector<uint8_t>> test_set;
 
-        std::string files[6] = {
+        std::string files[CIFAR_FILES] = {
             "data_batch_1.bin",
             "data_batch_2.bin",
             "data_batch_3.bin",
@@ -36,7 +40,7 @@ class Dataset {
             "test_batch.bin"
         };
 
-        std::string classes[10] {
+        std::string classes[CIFAR_CLASSES] {
             "airplane",
             "automobile",
             "bird",

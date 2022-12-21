@@ -11,13 +11,27 @@ Image::Image(std::vector<uint8_t> &data) {
  * @brief Displays an image.
  */
 void Image::display_image(std::string window_name) {
-    cv::Mat mat(32, 32, CV_8UC3);
+    cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+    cv::imshow(window_name, array_to_cv_mat());
+
+    int k = cv::waitKey(0);
+    cv::destroyWindow(window_name);
+}
+
+/**
+ * @brief Converts the array to a cv::Mat.
+ *
+ * @return cv::Mat Converted array to cv::Mat.
+ */
+cv::Mat Image::array_to_cv_mat() {
+    cv::Mat mat(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CV_8UC3);
     int pixel = 0;
 
     // Copy the data from the image buffer into the cv::mat matrix.
-    // TODO dit is kaulo aids, miss kan t met iterators. maar cv mat is sws ait aids.
-    for (int i = 0; i < 32; i++) {
-        for (int j = 0; j < 32; j++) {
+    // TODO dit is kaulo aids, miss kan t met iterators. maar cv mat is sws aids.
+    // Ook fking inefficient omdat t alles kopieert.
+    for (int i = 0; i < CIFAR_IMAGE_SIZE; i++) {
+        for (int j = 0; j < CIFAR_IMAGE_SIZE; j++) {
             for (int k = 0; k < 3; k++) {
                 mat.at<cv::Vec3b>(i, j)[k] = this->data[(2048 - k * 1024) + pixel];
             }
@@ -25,11 +39,7 @@ void Image::display_image(std::string window_name) {
         }
     }
 
-    cv::namedWindow(window_name, cv::WINDOW_NORMAL);
-    cv::imshow(window_name, mat);
-
-    int k = cv::waitKey(0);
-    cv::destroyWindow(window_name);
+    return mat;
 }
 
 /**
@@ -38,7 +48,7 @@ void Image::display_image(std::string window_name) {
  * @param path Path to save the image at.
  */
 void Image::save_image(std::string &path) {
-    cv::Mat src(32, 32, CV_8U, this->data.data());
+    cv::Mat src = array_to_cv_mat();
     cv::imwrite(path, src);
 }
 
