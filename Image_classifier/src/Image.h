@@ -6,6 +6,7 @@
 class Image {
     public:
         Image(std::vector<uint8_t> &data);
+        ~Image() = default;
 
         void display_image();
         void save_image(std::string &path);
