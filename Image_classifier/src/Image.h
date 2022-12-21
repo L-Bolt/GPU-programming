@@ -6,6 +6,7 @@
 class Image {
     public:
         Image(std::vector<uint8_t> &data);
+        ~Image() = default;
 
         static std::vector<std::vector<uint8_t>> split_vector(std::vector<uint8_t> &vec, size_t n);
         void display_image();
