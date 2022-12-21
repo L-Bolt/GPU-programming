@@ -29,13 +29,13 @@ cv::Mat Image::array_to_cv_mat() {
 
     // Copy the data from the image buffer into the cv::mat matrix.
     // TODO dit is kaulo aids, miss kan t met iterators. maar cv mat is sws aids.
-    // Ook fking inefficient omdat t alles kopieert.
+    // Ook fking inefficient omdat t alles kopieert. Maar dat moet vgm omdat een cv::mat anders random data heeft.
     for (int i = 0; i < CIFAR_IMAGE_SIZE; i++) {
         for (int j = 0; j < CIFAR_IMAGE_SIZE; j++) {
             for (int k = 0; k < 3; k++) {
-                mat.at<cv::Vec3b>(i, j)[k] = this->data[(2048 - k * 1024) + pixel];
+                mat.at<cv::Vec3b>(i, j)[k] = this->data[(2048 - k * 1024) + pixel]; //TODO maak een algemene functie die een i,j,k 3d coordinaat kan omzetten naar een 1d coordinaat voor de cifar dataset.
             }
-        pixel++;
+            pixel++;
         }
     }
 
