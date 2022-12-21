@@ -54,7 +54,7 @@ void Dataset::display_all_images() {
     for (std::vector<uint8_t> img_data : this->buffer) {
         Image img(img_data);
         std::cout << this->classes[img.get_class()] << std::endl;
-        img.display_image();
+        img.display_image(this->classes[img.get_class()]);
     }
 }
 
