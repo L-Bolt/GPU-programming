@@ -7,8 +7,8 @@ class Image {
     public:
         Image(std::vector<uint8_t> &data);
 
-        static std::vector<std::vector<uint8_t>> split_vector(std::vector<uint8_t> &vec, size_t n);
         void display_image();
+        void save_image(std::string &path);
         short get_class();
 
     private:
