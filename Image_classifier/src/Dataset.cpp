@@ -5,9 +5,10 @@
  * Calls the make_buffer function to store the dataset in memory
  */
 Dataset::Dataset(std::string path) {
-    this->path = path;
+    this->buffer = make_buffer(path);
 
-    this->buffer = make_buffer(this->path);
+    this->training_set = std::vector(this->buffer.begin(), this->buffer.end() - 10000);
+    this->test_set = std::vector(this->buffer.end() - 10000, this->buffer.end());
 }
 
 /**
@@ -16,18 +17,33 @@ Dataset::Dataset(std::string path) {
  */
 std::vector<std::vector<uint8_t>> Dataset::make_buffer(std::string& path) {
     // Allocate buffer vector
-    std::vector<uint8_t> buffer(5 * this->dataset_size);
+    std::vector<uint8_t> buffer(6 * this->dataset_size);
 
     // Read all 5 binary files containing the dataset.
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 6; i++) {
         size_t offset = i * this->dataset_size;
-        std::string binary_file_path = this->path + '/' + this->files[i];
+        std::string binary_file_path = path + '/' + this->files[i];
 
         std::ifstream file(binary_file_path, std::ios::binary);
+        if (!file) {
+            std::cout << "Error opening file: " << path << std::endl;
+            exit(1);
+        }
+
         file.read(reinterpret_cast<char*>(buffer.data() + offset), this->dataset_size);
     }
 
-    return split_vector(buffer, 5 * 10000);
+    return util::split_vector(buffer, 6 * 10000);
+}
+
+/**
+ * @brief Returns a reference to the data of one image in the buffer.
+ *
+ * @param index The index of the image in the buffer.
+ * @return std::vector<uint8_t>& Reference to the data of the image.
+ */
+std::vector<uint8_t> &Dataset::get_image_data(int &index) {
+    return this->buffer[index];
 }
 
 /**
@@ -36,7 +52,6 @@ std::vector<std::vector<uint8_t>> Dataset::make_buffer(std::string& path) {
  */
 void Dataset::display_all_images() {
     for (std::vector<uint8_t> img_data : this->buffer) {
-        size_t img_data_size = img_data.size();
         Image img(img_data);
         std::cout << this->classes[img.get_class()] << std::endl;
         img.display_image();
@@ -47,7 +62,7 @@ void Dataset::display_all_images() {
  * @brief Debug function that writes all the images in the dataset to the disk.
  */
 void Dataset::write_images_to_disk() {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 6; i++) {
         std::string folder = std::to_string(i + 1);
         if (std::filesystem::is_directory(folder)) {
             std::filesystem::remove_all(folder);
@@ -63,29 +78,4 @@ void Dataset::write_images_to_disk() {
             img.save_image(path);
         }
     }
-}
-
-/**
- * @brief Split a vector in n equal parts.
- *
- * @param vec Vector to split
- * @param n Split the vector in n parts.
- * @return std::vector<std::vector<uint8_t>> Vector containing all the split vectors.
- */
-std::vector<std::vector<uint8_t>> Dataset::split_vector(std::vector<uint8_t> &vec, size_t n) {
-    std::vector<std::vector<uint8_t>> outVec;
-
-    size_t length = vec.size() / n;
-    size_t remain = vec.size() % n;
-
-    size_t begin = 0;
-    size_t end = 0;
-
-    for (size_t i = 0; i < std::min(n, vec.size()); ++i) {
-        end += (remain > 0) ? (length + !!(remain--)) : length;
-        outVec.push_back(std::vector<uint8_t>(vec.begin() + begin, vec.begin() + end));
-        begin = end;
-    }
-
-    return outVec;
 }

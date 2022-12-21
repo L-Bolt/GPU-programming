@@ -14,7 +14,7 @@ link_directories(${OpenCL_LIBRARY})
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-file(GLOB cnn_src CONFIGURE_DEPENDS "src/*.h" "src/*.cpp")
+file(GLOB cnn_src CONFIGURE_DEPENDS "src/*.h" "src/*.cpp" "src/*.hpp")
 
 if (WIN32)
   set(BOOST_INC "C:/local/boost_1_76_0_b1_rc2")
