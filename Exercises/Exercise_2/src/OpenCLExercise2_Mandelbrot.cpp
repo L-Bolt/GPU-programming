@@ -8,10 +8,8 @@
 #include <Core/Assert.hpp>
 #include <Core/Time.hpp>
 #include <Core/Image.hpp>
-#include <OpenCL/cl-patched.hpp>
-#include <OpenCL/Program.hpp>
-#include <OpenCL/Event.hpp>
-#include <OpenCL/Device.hpp>
+
+#include <OpenCL/OpenCL.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -104,15 +102,16 @@ int main(int argc, char** argv) {
 	cl::Device device = context.getInfo<CL_CONTEXT_DEVICES>()[0];
 	std::vector<cl::Device> devices;
 	devices.push_back(device);
-	OpenCL::printDeviceInfo(std::cout, device);
+	// cl::printDeviceInfo(std::cout, device);
 
 	// Create a command queue
 	cl::CommandQueue queue(context, device, CL_QUEUE_PROFILING_ENABLE);
 
 	// Load the source code
-	cl::Program program = OpenCL::loadProgramSource(context, "../src/OpenCLExercise2_Mandelbrot.cl");
+	cl::Program program(context,"../src/OpenCLExercise2_Mandelbrot.cl");
 	// Compile the source code. This is similar to program.build(devices) but will print more detailed error messages
-	OpenCL::buildProgram(program, devices);
+	// cl::clBuildProgram(program, devices);
+	program.build(devices);
 
 	// Create a kernel object
 	cl::Kernel mandelbrotKernel(program, "mandelbrotKernel");
@@ -165,13 +164,13 @@ int main(int argc, char** argv) {
 	queue.enqueueReadBuffer(d_output, CL_TRUE, 0, size, h_outputGpu.data(), NULL, &device_to_host_time);
 
 	// Print performance data
-	Core::TimeSpan GPU_kernel_time = OpenCL::getElapsedTime(kernel_execution_time);
-	Core::TimeSpan GPU_memory_time = OpenCL::getElapsedTime(device_to_host_time); // This program only copies from the device to the host.
-	Core::TimeSpan sequential_time = cpu_end - cpu_start;
-	Core::TimeSpan paralellized_time = GPU_kernel_time + GPU_memory_time;
-	std::cout << "CPU time: " << sequential_time << std::endl;
-	std::cout << "GPU time: " << paralellized_time << std::endl;
-	std::cout << "Speedup: " << sequential_time.getSeconds() / paralellized_time.getSeconds() << std::endl;
+	//Core::TimeSpan GPU_kernel_time = cl::getElapsedTime(kernel_execution_time);
+	//Core::TimeSpan GPU_memory_time = cl::getElapsedTime(device_to_host_time); // This program only copies from the device to the host.
+	//Core::TimeSpan sequential_time = cpu_end - cpu_start;
+	//Core::TimeSpan paralellized_time = GPU_kernel_time + GPU_memory_time;
+	//std::cout << "CPU time: " << sequential_time << std::endl;
+	//std::cout << "GPU time: " << paralellized_time << std::endl;
+	//std::cout << "Speedup: " << sequential_time.getSeconds() / paralellized_time.getSeconds() << std::endl;
 
 	//////// Store output images ///////////////////////////////////
 	std::vector<float> imageDataCpu(count);

@@ -3,12 +3,16 @@
 #
 cmake_minimum_required (VERSION 3.8)
 project(Opencl-ex2)
+set (CMAKE_CXX_STANDARD 20)
 
 #Adding Opencl libs and include files to the proj
 find_package(OpenCL)
 include_directories(${OpenCL_INCLUDE_DIRS})
 link_directories(${OpenCL_LIBRARY})
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(MACOSX TRUE)
+endif()
 
 find_package(Boost 1.56 REQUIRED)
 
@@ -20,15 +24,18 @@ if (WIN32)
   include_directories(${BOOST_INC})
   link_directories(${BOOST_LIB})
 
-elseif(UNIX)
+elseif(UNIX AND NOT MACOSX)
   message("OS: Linux")
   include_directories(${Boost_INCLUDE_DIR})
+elseif(MACOSX)
+  message("OS: MacOS")
+  include_directories("/opt/homebrew/Cellar/boost/1.80.0/include")
 endif()
 
 
 #compile files in COre and OpenCL external libs
 file(GLOB CORE_SRC "lib/Core/*.cpp" "lib/Core/*.c")
-file(GLOB OPENCL_SRC "lib/OpenCL/*.cpp" "lib/OpenCL/*.c")
+file(GLOB OPENCL_SRC "lib/OpenCL/OpenCL.hpp")
 
 if (WIN32)
   file(GLOB BOOST_SRC "${BOOST_LIB}/*.lib")
@@ -41,6 +48,10 @@ endif()
 # Add source to this project's executable.
 add_executable (Opencl-ex2 "src/OpenCLExercise2_Mandelbrot.cpp" ${CORE_SRC} ${OPENCL_SRC} )
 target_include_directories (Opencl-ex2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "CORE" "OPENCL" "src" "lib")
-target_link_libraries (Opencl-ex2 ${OpenCL_LIBRARY} dl boost_system) #imagehlp)
+if (NOT MACOSX)
+  target_link_libraries (Opencl-ex2 ${OpenCL_LIBRARY} dl boost_system) #imagehlp)
+else()
+  target_link_libraries (Opencl-ex2 ${OpenCL_LIBRARY}) #imagehlp)
+endif()
 
 # TODO: Add tests and install targets if needed.
