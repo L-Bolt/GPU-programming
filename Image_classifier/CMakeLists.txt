@@ -117,7 +117,7 @@ if (WIN32)
 endif()
 
 if (MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 # Add source to this project's executable.
