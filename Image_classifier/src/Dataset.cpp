@@ -50,6 +50,10 @@ std::vector<std::vector<uint8_t>> Dataset::make_buffer(std::string& path) {
     return util::split_vector(buffer, CIFAR_IMAGE_COUNT);
 }
 
+/**
+ * Create an Image object for every block of image data in the dataset buffer.
+ * Store the Image object in the image_buffer and return the image_buffer.
+ */
 std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffer) {
     std::vector<Image> image_buffer(CIFAR_IMAGE_COUNT);
     for (int i = 0; i < CIFAR_IMAGE_COUNT; i++) {
@@ -97,6 +101,7 @@ void Dataset::write_images_to_disk() {
 
             std::vector<uint8_t> img_data = this->buffer[i * CIFAR_IMAGES_PER_FILE + j];
             Image img(&img_data);
+            std::cout << "saving image: " << (j + (CIFAR_IMAGES_PER_FILE * (i)) + 1) <<std::endl;
             img.save_image(path);
         }
     }

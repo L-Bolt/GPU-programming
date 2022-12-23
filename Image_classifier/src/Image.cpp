@@ -3,7 +3,6 @@
 
 Image::Image(std::vector<uint8_t> *data) {
     this->classifier = data->at(0);
-    data->erase(data->begin());
     this->data = data;
 
     this->matrix = Matrix3D(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
@@ -27,19 +26,26 @@ void Image::display_image(std::string window_name) {
  */
 cv::Mat Image::array_to_cv_mat() {
     cv::Mat mat(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CV_8UC3);
-    int pixel = 0;
+
+    // Start with pixel at 1 to offset the first byte being the classifier.
+    int pixel = 1;
 
     // Copy the data from the image buffer into the cv::mat matrix.
     // TODO dit is kaulo aids, miss kan t met iterators. maar cv mat is sws aids.
     // Ook fking inefficient omdat t alles kopieert. Maar dat moet vgm omdat een cv::mat anders random data heeft.
+    // Deze comment boeit eigenlijk niet omdat we cv mats wss alleen gaan gebruiken bij t displayen van een image.
     for (int i = 0; i < CIFAR_IMAGE_SIZE; i++) {
         for (int j = 0; j < CIFAR_IMAGE_SIZE; j++) {
-            for (int k = 0; k < 3; k++) {
-                mat.at<cv::Vec3b>(i, j)[k] = this->data->at((2048 - k * 1024) + pixel); //TODO maak een algemene functie die een i,j,k 3d coordinaat kan omzetten naar een 1d coordinaat voor de cifar dataset.
+            for (int k = 0; k < CIFAR_IMAGE_COLOR_CHANNELS; k++) {
+                mat.at<cv::Vec3b>(i, j)[k] = this->matrix.get(i, j, k);
             }
             pixel++;
         }
     }
+
+    // Convert our matrix' RGB representation to the BGR representation needed
+    // to display OpenCV matrices.
+    cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
 
     return mat;
 }
