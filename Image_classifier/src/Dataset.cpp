@@ -10,13 +10,17 @@ Dataset::Dataset(std::string path) {
         this->image_buffer = make_images(this->buffer);
         this->training_set = std::vector(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
         this->test_set = std::vector(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
+
+        std::cout << "Images in training set: " << this->training_set.size() << '\n';
+        std::cout << "Images in test set: " << this->test_set.size() << std::endl;
     }
     catch (const std::string &msg) {
         std::cout << msg << std::endl;
+        std::cout << "Have you tried downloading the dataset by running \033[1;36m./download_dataset.sh\033[0m?" << std::endl;
         exit(1);
     }
     catch(...) {
-        std::cout << "Could not allocate memory for image buffer" << std::endl;
+        std::cout << "\033[1;31mCould not allocate memory for image buffer\033[0m" << std::endl;
         exit(1);
     }
 }
@@ -29,24 +33,24 @@ std::vector<std::vector<uint8_t>> Dataset::make_buffer(std::string& path) {
     // Allocate buffer vector
     std::cout << "Allocating memory for dataset buffer..." << std::endl;
     std::vector<uint8_t> buffer(CIFAR_FILES * CIFAR_BIN_FILE_SIZE);
-    printf("Succesfully allocated %ld bytes for image buffer.\n", sizeof(std::vector<uint8_t>) + (sizeof(uint8_t) * buffer.size()));
+    printf("\033[1;32mSuccesfully allocated %ld bytes for image buffer.\033[0m\n\n", sizeof(std::vector<uint8_t>) + (sizeof(uint8_t) * buffer.size()));
 
     // Read all 6 binary files containing the dataset.
     for (int i = 0; i < CIFAR_FILES; i++) {
         size_t offset = i * CIFAR_BIN_FILE_SIZE;
         std::string binary_file_path = path + '/' + this->files[i];
 
-        std::cout << "Reading dataset file: " << binary_file_path << "..." << std::endl;
+        std::cout << "Reading dataset file: " << binary_file_path << " ..." << std::endl;
         std::ifstream file(binary_file_path, std::ios::binary);
         if (!file) {
-            throw("Error opening file: " + path);
+            throw("\033[1;31mError opening file: " + path + "\033[0m");
         }
 
         file.read(reinterpret_cast<char*>(buffer.data() + offset), CIFAR_BIN_FILE_SIZE);
         file.close();
     }
 
-    std::cout << "Dataset has been read into memory." << std::endl;
+    std::cout << "\033[1;32mDataset has been read into memory.\033[0m\n" <<std::endl;
     return util::split_vector(buffer, CIFAR_IMAGE_COUNT);
 }
 
