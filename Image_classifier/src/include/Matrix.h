@@ -4,7 +4,7 @@
 
 class Matrix3D {
     public:
-        Matrix3D() {};
+        Matrix3D(): rows{0}, columns{0}, channels{0} {};
         Matrix3D(int rows, int columns, int channels, std::vector<uint8_t> *data);
         ~Matrix3D() = default;
 
@@ -15,6 +15,8 @@ class Matrix3D {
         uint8_t get(int row, int column, int channel);
         void set(int row, int column, int channel, uint8_t value);
         void print();
+
+        friend Matrix3D operator+(Matrix3D& m1, Matrix3D& m2);
 
     private:
         std::vector<uint8_t> *array;

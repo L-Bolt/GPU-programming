@@ -9,7 +9,7 @@
 
 class Image {
     public:
-        Image() {};
+        Image(): classifier{255} {};
         Image(std::vector<uint8_t> *data);
         ~Image() = default;
 
