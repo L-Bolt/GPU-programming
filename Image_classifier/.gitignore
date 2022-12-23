@@ -24,8 +24,8 @@
 CMakeCache.txt
 test-cnn
 *cnn
-data/cifar-10-batches-bin/
+dataset/cifar-10-batches-bin/
 CMakeFiles
 Makefile
 .vscode
-data/cifar-10*
+dataset/cifar-10*

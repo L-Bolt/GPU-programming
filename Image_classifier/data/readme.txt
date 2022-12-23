@@ -1,1 +1,0 @@
-Download and extract the CIFAR 10 dataset here.
