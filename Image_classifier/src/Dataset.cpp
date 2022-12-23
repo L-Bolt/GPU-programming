@@ -7,8 +7,9 @@
 Dataset::Dataset(std::string path) {
     try {
         this->buffer = make_buffer(path);
-        this->training_set = std::vector(this->buffer.begin(), this->buffer.end() - CIFAR_IMAGES_PER_FILE);
-        this->test_set = std::vector(this->buffer.end() - CIFAR_IMAGES_PER_FILE, this->buffer.end());
+        this->image_buffer = make_images(this->buffer);
+        this->training_set = std::vector(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
+        this->test_set = std::vector(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
     }
     catch (const std::string &msg) {
         std::cout << msg << std::endl;
@@ -49,6 +50,15 @@ std::vector<std::vector<uint8_t>> Dataset::make_buffer(std::string& path) {
     return util::split_vector(buffer, CIFAR_IMAGE_COUNT);
 }
 
+std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffer) {
+    std::vector<Image> image_buffer(CIFAR_IMAGE_COUNT);
+    for (int i = 0; i < CIFAR_IMAGE_COUNT; i++) {
+        image_buffer[i] = Image(&buffer[i]);
+    }
+
+    return image_buffer;
+}
+
 /**
  * @brief Returns a reference to the data of one image in the buffer.
  *
@@ -64,8 +74,7 @@ std::vector<uint8_t> &Dataset::get_image_data(int &index) {
  * display the image.
  */
 void Dataset::display_all_images() {
-    for (std::vector<uint8_t> img_data : this->buffer) {
-        Image img(img_data);
+    for (Image img : this->image_buffer) {
         std::cout << this->classes[img.get_class()] << std::endl;
         img.display_image(this->classes[img.get_class()]);
     }
@@ -87,7 +96,7 @@ void Dataset::write_images_to_disk() {
             std::string path = folder + '/' + image_name + ".jpg";
 
             std::vector<uint8_t> img_data = this->buffer[i * CIFAR_IMAGES_PER_FILE + j];
-            Image img(img_data);
+            Image img(&img_data);
             img.save_image(path);
         }
     }

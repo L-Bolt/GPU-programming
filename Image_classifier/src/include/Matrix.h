@@ -4,7 +4,8 @@
 
 class Matrix3D {
     public:
-        Matrix3D(int rows, int columns, int channels, std::vector<uint8_t> &data);
+        Matrix3D() {};
+        Matrix3D(int rows, int columns, int channels, std::vector<uint8_t> *data);
         ~Matrix3D() = default;
 
         int get_rows() {return rows;};
@@ -16,10 +17,11 @@ class Matrix3D {
         void print();
 
     private:
-        std::vector<uint8_t> array;
+        std::vector<uint8_t> *array;
         int columns;
         int rows;
         int channels;
 
         int coordinate_to_index3D(int i, int j, int k);
+        std::vector<int> index_to_coordinate3D(int index);
 };

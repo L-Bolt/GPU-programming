@@ -1,10 +1,12 @@
 #include "include/Image.h"
 
 
-Image::Image(std::vector<uint8_t> &data) {
-    this->classifier = data[0];
-    data.erase(data.begin());
+Image::Image(std::vector<uint8_t> *data) {
+    this->classifier = data->at(0);
+    data->erase(data->begin());
     this->data = data;
+
+    this->matrix = Matrix3D(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
 }
 
 /**
@@ -33,7 +35,7 @@ cv::Mat Image::array_to_cv_mat() {
     for (int i = 0; i < CIFAR_IMAGE_SIZE; i++) {
         for (int j = 0; j < CIFAR_IMAGE_SIZE; j++) {
             for (int k = 0; k < 3; k++) {
-                mat.at<cv::Vec3b>(i, j)[k] = this->data[(2048 - k * 1024) + pixel]; //TODO maak een algemene functie die een i,j,k 3d coordinaat kan omzetten naar een 1d coordinaat voor de cifar dataset.
+                mat.at<cv::Vec3b>(i, j)[k] = this->data->at((2048 - k * 1024) + pixel); //TODO maak een algemene functie die een i,j,k 3d coordinaat kan omzetten naar een 1d coordinaat voor de cifar dataset.
             }
             pixel++;
         }

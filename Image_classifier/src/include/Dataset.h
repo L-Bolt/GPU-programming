@@ -28,8 +28,9 @@ class Dataset {
 
     private:
         std::vector<std::vector<uint8_t>> buffer;
-        std::vector<std::vector<uint8_t>> training_set;
-        std::vector<std::vector<uint8_t>> test_set;
+        std::vector<Image> image_buffer;
+        std::vector<Image> training_set;
+        std::vector<Image> test_set;
 
         std::string files[CIFAR_FILES] = {
             "data_batch_1.bin",
@@ -54,6 +55,7 @@ class Dataset {
         };
 
         std::vector<std::vector<uint8_t>> make_buffer(std::string& path);
+        std::vector<Image> make_images(std::vector<std::vector<uint8_t>> &buffer);
 };
 
 #endif
