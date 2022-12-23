@@ -73,7 +73,7 @@ project(image_classifier)
 set (CMAKE_CXX_STANDARD 20)
 
 #Adding Opencl libs and include files to the proj
-find_package(OpenCL)
+find_package(OpenCL 1.2 REQUIRED)
 include_directories(${OpenCL_INCLUDE_DIRS})
 link_directories(${OpenCL_LIBRARY})
 
