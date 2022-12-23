@@ -5,10 +5,19 @@
  * Calls the make_buffer function to store the dataset in memory
  */
 Dataset::Dataset(std::string path) {
-    this->buffer = make_buffer(path);
-
-    this->training_set = std::vector(this->buffer.begin(), this->buffer.end() - CIFAR_IMAGES_PER_FILE);
-    this->test_set = std::vector(this->buffer.end() - CIFAR_IMAGES_PER_FILE, this->buffer.end());
+    try {
+        this->buffer = make_buffer(path);
+        this->training_set = std::vector(this->buffer.begin(), this->buffer.end() - CIFAR_IMAGES_PER_FILE);
+        this->test_set = std::vector(this->buffer.end() - CIFAR_IMAGES_PER_FILE, this->buffer.end());
+    }
+    catch (const std::string &msg) {
+        std::cout << msg << std::endl;
+        exit(1);
+    }
+    catch(...) {
+        std::cout << "Could not allocate memory for image buffer" << std::endl;
+        exit(1);
+    }
 }
 
 /**
@@ -17,22 +26,26 @@ Dataset::Dataset(std::string path) {
  */
 std::vector<std::vector<uint8_t>> Dataset::make_buffer(std::string& path) {
     // Allocate buffer vector
+    std::cout << "Allocating memory for dataset buffer..." << std::endl;
     std::vector<uint8_t> buffer(CIFAR_FILES * CIFAR_BIN_FILE_SIZE);
+    printf("Succesfully allocated %ld bytes for image buffer.\n", sizeof(std::vector<uint8_t>) + (sizeof(uint8_t) * buffer.size()));
 
     // Read all 6 binary files containing the dataset.
     for (int i = 0; i < CIFAR_FILES; i++) {
         size_t offset = i * CIFAR_BIN_FILE_SIZE;
         std::string binary_file_path = path + '/' + this->files[i];
 
+        std::cout << "Reading dataset file: " << binary_file_path << "..." << std::endl;
         std::ifstream file(binary_file_path, std::ios::binary);
         if (!file) {
-            std::cout << "Error opening file: " << path << std::endl;
-            exit(1);
+            throw("Error opening file: " + path);
         }
 
         file.read(reinterpret_cast<char*>(buffer.data() + offset), CIFAR_BIN_FILE_SIZE);
+        file.close();
     }
 
+    std::cout << "Dataset has been read into memory." << std::endl;
     return util::split_vector(buffer, CIFAR_IMAGE_COUNT);
 }
 
