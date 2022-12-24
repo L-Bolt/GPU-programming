@@ -12,7 +12,7 @@ Dataset::Dataset(std::string path) {
         this->test_set = std::vector<Image>(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
 
         std::cout << "Images in training set: " << this->training_set.size() << '\n';
-        std::cout << "Images in test set: " << this->test_set.size() << std::endl;
+        std::cout << "Images in test set: " << this->test_set.size() << '\n' << std::endl;
     }
     catch (const std::string &msg) {
         std::cout << msg << std::endl;
