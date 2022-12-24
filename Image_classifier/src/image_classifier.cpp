@@ -1,5 +1,3 @@
-#include <OpenCL/OpenCL.hpp>
-
 #include "include/Dataset.h"
 #include "include/Gpu.h"
 
