@@ -1,10 +1,14 @@
+#ifndef MATRIX
+#define MATRIX
+
 #include <string>
 #include <vector>
 #include <iostream>
 
 class Matrix3D {
     public:
-        Matrix3D(): rows{0}, columns{0}, channels{0} {};
+        Matrix3D(): rows{0}, columns{0}, channels{0}, array{NULL} {};
+        Matrix3D(int rows, int columns, int channels);
         Matrix3D(int rows, int columns, int channels, std::vector<uint8_t> *data);
         ~Matrix3D() = default;
 
@@ -27,3 +31,5 @@ class Matrix3D {
         int coordinate_to_index3D(int i, int j, int k);
         std::vector<int> index_to_coordinate3D(int index);
 };
+
+#endif

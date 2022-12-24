@@ -7,6 +7,15 @@ Matrix3D::Matrix3D(int rows, int columns, int channels, std::vector<uint8_t> *da
     this->array = data;
 }
 
+Matrix3D::Matrix3D(int rows, int columns, int channels) {
+    this->rows = rows;
+    this->columns = columns;
+    this->channels = channels;
+
+    //TODO is dit optimaal?
+    this->array = new std::vector<uint8_t>((rows * columns * channels) + 1);
+}
+
 /**
  * Sets the value at the coordinate (row, column, channel) to the given value.
  */
@@ -25,7 +34,7 @@ uint8_t Matrix3D::get(int row, int column, int channel) {
  * Transforms the coordinate (i, j, k) to the 1D coordinate used in the array.
  */
 int Matrix3D::coordinate_to_index3D(int i, int j, int k) {
-    return 1 + (k * this->rows * this->columns) + (i * this->rows) + j;
+    return 1 + ((k * this->rows * this->columns) + (i * this->rows) + j);
 }
 
 //TODO: Check of deze functie ook echt werkt. Wss hebben we m niet nodig tho
@@ -66,4 +75,24 @@ void Matrix3D::print() {
 		std::cout << "\n\n";
 	}
     std::cout << std::endl;
+}
+
+//TODO kan maybe beter met een transform functie
+/**
+ * Adds two 3D matrices together.
+ */
+Matrix3D operator+(Matrix3D& m1, Matrix3D& m2) {
+    Matrix3D plus(m1.rows, m1.columns, m1.channels);
+
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            for (int k = 0; k < m1.channels; k++) {
+                uint new_value = m1.get(i, j, k) + m2.get(i, j, k);
+                new_value > 255 ? 255 : new_value;
+                plus.set(i, j, k, (uint8_t) new_value);
+            }
+        }
+    }
+
+    return plus;
 }

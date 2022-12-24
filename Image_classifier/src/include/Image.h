@@ -1,3 +1,6 @@
+#ifndef IMAGE
+#define IMAGE
+
 #include <string>
 #include <vector>
 #include <opencv2/opencv.hpp>
@@ -25,3 +28,5 @@ class Image {
         cv::Mat array_to_cv_mat();
 
 };
+
+#endif

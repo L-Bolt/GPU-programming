@@ -8,8 +8,8 @@ Dataset::Dataset(std::string path) {
     try {
         this->buffer = make_buffer(path);
         this->image_buffer = make_images(this->buffer);
-        this->training_set = std::vector(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
-        this->test_set = std::vector(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
+        this->training_set = std::vector<Image>(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
+        this->test_set = std::vector<Image>(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
 
         std::cout << "Images in training set: " << this->training_set.size() << '\n';
         std::cout << "Images in test set: " << this->test_set.size() << std::endl;

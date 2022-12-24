@@ -27,9 +27,6 @@ void Image::display_image(std::string window_name) {
 cv::Mat Image::array_to_cv_mat() {
     cv::Mat mat(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CV_8UC3);
 
-    // Start with pixel at 1 to offset the first byte being the classifier.
-    int pixel = 1;
-
     // Copy the data from the image buffer into the cv::mat matrix.
     // TODO dit is kaulo aids, miss kan t met iterators. maar cv mat is sws aids.
     // Ook fking inefficient omdat t alles kopieert. Maar dat moet vgm omdat een cv::mat anders random data heeft.
@@ -39,7 +36,6 @@ cv::Mat Image::array_to_cv_mat() {
             for (int k = 0; k < CIFAR_IMAGE_COLOR_CHANNELS; k++) {
                 mat.at<cv::Vec3b>(i, j)[k] = this->matrix.get(i, j, k);
             }
-            pixel++;
         }
     }
 
