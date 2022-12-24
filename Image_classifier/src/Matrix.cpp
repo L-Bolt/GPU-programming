@@ -88,11 +88,27 @@ Matrix3D operator+(Matrix3D& m1, Matrix3D& m2) {
         for (int j = 0; j < m1.columns; j++) {
             for (int k = 0; k < m1.channels; k++) {
                 uint new_value = m1.get(i, j, k) + m2.get(i, j, k);
-                new_value > 255 ? 255 : new_value;
+                new_value = new_value > 255 ? 255 : new_value;
                 plus.set(i, j, k, (uint8_t) new_value);
             }
         }
     }
 
     return plus;
+}
+
+Matrix3D operator-(Matrix3D& m1, Matrix3D& m2) {
+    Matrix3D minus(m1.rows, m1.columns, m1.channels);
+
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            for (int k = 0; k < m1.channels; k++) {
+                int new_value = m1.get(i, j, k) - m2.get(i, j, k);
+                new_value = new_value < 0 ? 0 : new_value;
+                minus.set(i, j, k, (uint8_t) new_value);
+            }
+        }
+    }
+
+    return minus;
 }

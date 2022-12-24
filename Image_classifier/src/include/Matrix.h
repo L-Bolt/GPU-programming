@@ -21,6 +21,7 @@ class Matrix3D {
         void print();
 
         friend Matrix3D operator+(Matrix3D& m1, Matrix3D& m2);
+        friend Matrix3D operator-(Matrix3D& m1, Matrix3D& m2);
 
     private:
         std::vector<uint8_t> *array;
