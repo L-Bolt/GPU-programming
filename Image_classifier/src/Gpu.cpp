@@ -8,14 +8,14 @@ Gpu::Gpu(std::string source_path) {
         this->device = get_default_device();
         this->context = make_context();
         this->program = make_program();
+
+        std::cout << "Using platform '" << platform.getInfo<CL_PLATFORM_NAME>() << "' from '" << platform.getInfo<CL_PLATFORM_VENDOR>() << "'" << std::endl;
+        std::cout << "Using GPU '" << device.getInfo<CL_DEVICE_NAME>() << "'\n" << std::endl;
     }
     catch(...) {
         this->enabled = false;
         std::cout << "Could not find a GPU to use. continuing only on CPU" << std::endl;
     }
-
-    std::cout << "Using platform '" << platform.getInfo<CL_PLATFORM_NAME>() << "' from '" << platform.getInfo<CL_PLATFORM_VENDOR>() << "'" << std::endl;
-    std::cout << "Using GPU '" << device.getInfo<CL_DEVICE_NAME>() << "'\n" << std::endl;
 }
 
 void Gpu::test() {
