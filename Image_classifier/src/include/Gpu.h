@@ -14,6 +14,7 @@ class Gpu {
         ~Gpu() = default;
 
         bool build_program();
+        bool gpu_enabled() const {return enabled;};
         void test();
 
     private:
@@ -29,8 +30,6 @@ class Gpu {
         cl::Platform get_platform();
         cl::Program make_program();
         cl::Context make_context();
-
-        bool gpu_enabled() const {return enabled;};
 
 };
 
