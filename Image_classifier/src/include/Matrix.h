@@ -23,9 +23,13 @@ class Matrix2D {
         void print();
         static void test_matrix2D();
 
-        friend Matrix2D operator+(Matrix2D& m1, Matrix2D& m2);
-        friend Matrix2D operator-(Matrix2D& m1, Matrix2D& m2);
-        friend Matrix2D operator*(Matrix2D& m1, Matrix2D& m2);
+        friend Matrix2D operator+(Matrix2D &m1, Matrix2D &m2);
+        friend Matrix2D operator-(Matrix2D &m1, Matrix2D &m2);
+        friend Matrix2D operator*(Matrix2D &m1, Matrix2D &m2);
+
+        friend Matrix2D operator+(Matrix2D &m1, int &scalar);
+        friend Matrix2D operator-(Matrix2D &m1, int &scalar);
+        friend Matrix2D operator*(Matrix2D &m1, int &scalar);
 
     private:
         int rows;
@@ -53,9 +57,13 @@ class Matrix3D {
         void print();
         static void test_matrix3D();
 
-        friend Matrix3D operator+(Matrix3D& m1, Matrix3D& m2);
-        friend Matrix3D operator-(Matrix3D& m1, Matrix3D& m2);
-        friend Matrix2D operator*(Matrix3D& m1, Matrix3D& m2);
+        friend Matrix3D operator+(Matrix3D &m1, Matrix3D &m2);
+        friend Matrix3D operator-(Matrix3D &m1, Matrix3D &m2);
+        friend Matrix2D operator*(Matrix3D &m1, Matrix3D &m2);
+
+        friend Matrix3D operator+(Matrix3D &m1, int &scalar);
+        friend Matrix3D operator-(Matrix3D &m1, int &scalar);
+        friend Matrix3D operator*(Matrix3D &m1, int &scalar);
 
     private:
         int rows;

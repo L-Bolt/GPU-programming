@@ -1,5 +1,6 @@
 #include "include/util.h"
 
+
 /**
  * @brief Split a vector in n equal parts.
  *

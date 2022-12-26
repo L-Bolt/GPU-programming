@@ -1,5 +1,6 @@
 #include "include/Matrix.h"
 
+
 Matrix3D::Matrix3D(int rows, int columns, int channels, std::vector<uint8_t> *data) {
     this->rows = rows;
     this->columns = columns;
@@ -109,6 +110,24 @@ Matrix3D operator+(Matrix3D& m1, Matrix3D& m2) {
 }
 
 /**
+ * Adds scalar to every index of m1. Accounts for overflow by limiying the
+ * result to 255.
+ */
+Matrix3D operator+(Matrix3D& m1, int &scalar) {
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            for (int k = 0; k < m1.channels; k++) {
+                int new_value = m1.get(i, j, k) + scalar;
+                new_value = new_value > 255 ? 255 : new_value;
+                m1.set(i, j, k, (uint8_t) new_value);
+            }
+        }
+    }
+
+    return m1;
+}
+
+/**
  * Subtracts m2 from m1.
  */
 Matrix3D operator-(Matrix3D& m1, Matrix3D& m2) {
@@ -125,6 +144,24 @@ Matrix3D operator-(Matrix3D& m1, Matrix3D& m2) {
     }
 
     return minus;
+}
+
+/**
+ * Subtracts scalar from every index in m1. Accounts for underflow by limiting the
+ * result to 255.
+ */
+Matrix3D operator-(Matrix3D& m1, int &scalar) {
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            for (int k = 0; k < m1.channels; k++) {
+                int new_value = m1.get(i, j, k) - scalar;
+                new_value = new_value < 0 ? 0 : new_value;
+                m1.set(i, j, k, (uint8_t) new_value);
+            }
+        }
+    }
+
+    return m1;
 }
 
 /**
@@ -150,6 +187,24 @@ Matrix2D operator*(Matrix3D& m1, Matrix3D& m2) {
     }
 
     return mult;
+}
+
+/**
+ * Multiplies every index of m1 by scalar. Accounts for overflow by limiting the
+ * result  to 255.
+ */
+Matrix3D operator*(Matrix3D& m1, int &scalar) {
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            for (int k = 0; k < m1.channels; k++) {
+                int new_value = m1.get(i, j, k) * scalar;
+                new_value = new_value > 255 ? 255 : new_value;
+                m1.set(i, j, k, (uint8_t) new_value);
+            }
+        }
+    }
+
+    return m1;
 }
 
 Matrix2D::Matrix2D(int rows, int columns, std::vector<uint8_t> *data) {
@@ -232,6 +287,22 @@ Matrix2D operator+(Matrix2D& m1, Matrix2D& m2) {
 }
 
 /**
+ * Adds scalar to every index in m1. Accounts for overflow by limiting the result
+ * to 255.
+ */
+Matrix2D operator+(Matrix2D& m1, int &scalar) {
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            int new_value = m1.get(i, j) + scalar;
+            new_value = new_value > 255 ? 255 : new_value;
+            m1.set(i, j, (uint8_t) new_value);
+        }
+    }
+
+    return m1;
+}
+
+/**
  * Subtracts m2 from m1. Accounts for underflow by limiting the result value to 0.
  */
 Matrix2D operator-(Matrix2D& m1, Matrix2D& m2) {
@@ -246,6 +317,22 @@ Matrix2D operator-(Matrix2D& m1, Matrix2D& m2) {
     }
 
     return minus;
+}
+
+/**
+ * Subtracts scalar to every index in m1. Accounts for underflow by limiting the
+ * result to 0.
+ */
+Matrix2D operator-(Matrix2D& m1, int &scalar) {
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            int new_value = m1.get(i, j) - scalar;
+            new_value = new_value < 0 ? 0 : new_value;
+            m1.set(i, j, (uint8_t) new_value);
+        }
+    }
+
+    return m1;
 }
 
 /**
@@ -267,6 +354,22 @@ Matrix2D operator*(Matrix2D& m1, Matrix2D& m2) {
     }
 
     return mult;
+}
+
+/**
+ * Multiplies every index of m1 by scalar. Accounts for overflow by limiting the
+ * result  to 255.
+ */
+Matrix2D operator*(Matrix2D& m1, int &scalar) {
+    for (int i = 0; i < m1.rows; i++) {
+        for (int j = 0; j < m1.columns; j++) {
+            int new_value = m1.get(i, j) * scalar;
+            new_value = new_value > 255 ? 255 : new_value;
+            m1.set(i, j, (uint8_t) new_value);
+        }
+    }
+
+    return m1;
 }
 
 /**
