@@ -269,6 +269,17 @@ const std::vector<int> Matrix2D::index_to_coordinate2D(int index) {
     return coordinate;
 }
 
+//TODO: iets beter testen.
+/**
+ * Reshapes the matrix.
+ */
+void Matrix2D::reshape(int rows, int columns) {
+    assert(rows * columns == this->array->size());
+
+    this->rows = rows;
+    this->columns = columns;
+}
+
 /**
  * Adds m2 to m1. Accounts for overflow by limiting the result value to 255.
  */
@@ -387,12 +398,28 @@ void Matrix2D::print() {
     }
 }
 
+/**
+ * Debug function to test Matrix2D implementation.
+ */
 void Matrix2D::test_matrix2D() {
     std::vector<uint8_t> a = {1, 2, 3, 4};
     std::vector<uint8_t> b = {5, 6, 7, 8};
+    std::vector<uint8_t> c = {1, 2, 3, 4, 5, 6, 7, 8};
 
     Matrix2D matA(2, 2, &a);
     Matrix2D matB(2, 2, &b);
+    Matrix2D matC(4, 2, &c);
+
+    std::cout << "resizing matrix" << std::endl;
+    matC.print();
+    std::cout << "\nreshaping to (2, 4) \n";
+    matC.reshape(2, 4);
+    matC.print();
+    std::cout << "\nreshaping to (8,1)" << std::endl;
+    matC.reshape(8, 1);
+    matC.print();
+    std::cout << std::endl;
+
     std::cout << "testing addition" << std::endl;
     Matrix2D plus = matA + matB;
     plus.print();
@@ -409,6 +436,9 @@ void Matrix2D::test_matrix2D() {
     std::cout << std::endl;
 }
 
+/**
+ * Debug function to test Matrix3D implementation.
+ */
 void Matrix3D::test_matrix3D() {
     std::vector<uint8_t> a = {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
     std::vector<uint8_t> b = {4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6};

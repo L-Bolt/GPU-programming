@@ -21,6 +21,7 @@ class Matrix2D {
         uint8_t get(int row, int column);
         void set(int row, int column, uint8_t value);
         void print();
+        void reshape(int rows, int columns);
         static void test_matrix2D();
 
         friend Matrix2D operator+(Matrix2D &m1, Matrix2D &m2);
@@ -34,8 +35,9 @@ class Matrix2D {
     private:
         int rows;
         int columns;
-        bool dynamic = false;
         std::vector<uint8_t> *array;
+
+        bool dynamic = false;
 
         int coordinate_to_index2D(int i, int j);
         const std::vector<int> index_to_coordinate2D(int index);
