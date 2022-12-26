@@ -3,7 +3,7 @@
 # have to edit this cmake file.
 cmake_minimum_required (VERSION 3.8)
 project(image_classifier)
-set (CMAKE_CXX_STANDARD 20 EXACT REQUIRED)
+set (CMAKE_CXX_STANDARD 20)
 
 #Adding Opencl libs and include files to the proj
 find_package(OpenCL 1.2 REQUIRED)
