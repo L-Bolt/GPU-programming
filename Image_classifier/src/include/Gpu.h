@@ -8,9 +8,8 @@
 #include <OpenCL/OpenCL.hpp>
 
 class Gpu {
-
     public:
-        Gpu(std::string source_path);
+        Gpu(std::vector<std::string> source_paths);
         ~Gpu() = default;
 
         bool build_program();
@@ -18,7 +17,7 @@ class Gpu {
         void test();
 
     private:
-        std::string source_path;
+        std::vector<std::string> source_paths;
         bool enabled = true;
 
         cl::Device device;

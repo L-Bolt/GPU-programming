@@ -1,7 +1,7 @@
 #include "include/Gpu.h"
 
-Gpu::Gpu(std::string source_path) {
-    this->source_path = source_path;
+Gpu::Gpu(std::vector<std::string> source_paths) {
+    this->source_paths = source_paths;
 
     try {
         this->platform = get_platform();
@@ -47,12 +47,17 @@ bool Gpu::build_program() {
 }
 
 cl::Program Gpu::make_program() {
-    std::ifstream kernel_file(this->source_path);
-    std::string src(std::istreambuf_iterator<char>(kernel_file), (std::istreambuf_iterator<char>()));
-    std::vector<std::string> kernels;
-    kernels.push_back(src);
+    // TODO als de gpu_test() functie niet hello world print moet deze code weer
+    // aan.
+    // std::vector<std::string> kernels;
+    // for (std::string source_path : this->source_paths) {
+    //     std::ifstream kernel_file(source_path);
+    //     std::string src(std::istreambuf_iterator<char>(kernel_file), (std::istreambuf_iterator<char>()));
+    //     kernels.push_back(src);
+    // }
+    // cl::Program program(this->context, kernels);
 
-    cl::Program program(this->context, kernels);
+    cl::Program program(this->context, this->source_paths);
     return program;
 }
 
@@ -69,13 +74,9 @@ cl::Platform Gpu::get_platform() {
 }
 
 cl::Device Gpu::get_default_device(){
-
-    /**
-     * Search for all the devices on the first platform and check if
-     * there are any available.
-     * */
-
-    auto platform = this->platform;
+    // Search for all the devices on the first platform and check if
+    // there are any available.
+    cl::Platform platform = this->platform;
     std::vector<cl::Device> devices;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 
@@ -84,9 +85,6 @@ cl::Device Gpu::get_default_device(){
         throw("No devices found!\n");
     }
 
-    /**
-     * Return the first device found.
-     * */
-
+    // Return the first device found.
     return devices.front();
 }

@@ -55,6 +55,11 @@ endif()
 
 # Add source to this project's executable.
 add_executable (image_classifier ${cnn_src} ${CORE_SRC} ${OPENCL_SRC} )
+
+target_compile_options(image_classifier PUBLIC
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>
+)
+
 target_include_directories (image_classifier PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "CORE" "OPENCL" "src" "lib")
 if (NOT MACOSX)
   target_link_libraries (image_classifier ${OpenCL_LIBRARY} ${OpenCV_LIBS} dl boost_system) #imagehlp)

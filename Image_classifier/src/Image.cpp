@@ -15,7 +15,7 @@ void Image::display_image(std::string window_name) {
     cv::namedWindow(window_name, cv::WINDOW_NORMAL);
     cv::imshow(window_name, array_to_cv_mat());
 
-    int k = cv::waitKey(0);
+    cv::waitKey(0);
     cv::destroyWindow(window_name);
 }
 
