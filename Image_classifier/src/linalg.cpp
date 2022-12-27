@@ -13,3 +13,7 @@ Matrix2D linalg::convolve(Matrix2D &mat, Matrix2D &kernel) {
 
     return result;
 }
+
+uint8_t linalg::max_pooling(Matrix2D &mat, int size) {
+    return 0;
+}
