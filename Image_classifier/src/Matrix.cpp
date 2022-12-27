@@ -181,8 +181,7 @@ Matrix2D operator*(Matrix3D& m1, Matrix3D& m2) {
             for (int k = 0; k < m1.channels; k++) {
                 sum += m1.get(i, j, k) * m2.get(i, j, k);
             }
-            sum = sum > 255 ? 255 : sum;
-            mult.set(i, j, (uint8_t) sum);
+            mult.set(i, j, sum);
         }
     }
 
@@ -210,8 +209,11 @@ Matrix3D operator*(Matrix3D& m1, int &scalar) {
 Matrix2D::Matrix2D(int rows, int columns, std::vector<uint8_t> *data) {
     this->rows = rows;
     this->columns = columns;
+    this->array = new std::vector<int>(this->rows * this->columns);
 
-    this->array = data;
+    for (size_t i = 0; i < data->size(); i++) {
+        this->array->at(i) = (int) data->at(i);
+    }
 }
 
 Matrix2D::Matrix2D(int rows, int columns) {
@@ -219,8 +221,22 @@ Matrix2D::Matrix2D(int rows, int columns) {
     this->columns = columns;
     this->dynamic = true;
 
-    this->array = new std::vector<uint8_t>(this->rows * this->columns);
+    this->array = new std::vector<int>(this->rows * this->columns);
     std::fill(this->array->begin(), this->array->end(), 0);
+}
+
+void Matrix2D::normalize() {
+    unsigned long long sum = 0;
+    for (size_t i = 0; i < this->array->size(); i++) {
+        sum += this->array->at(i);
+    }
+
+    assert(sum > 0);
+    this->normalized_array = new std::vector<double>(this->rows * this->columns);
+
+    for (size_t i = 0; i < this->array->size(); i++) {
+        this->normalized_array->at(i) = (double) this->array->at(i) / (double) sum;
+    }
 }
 
 /**
@@ -231,19 +247,23 @@ Matrix2D::~Matrix2D() {
     if (this->dynamic) {
         delete this->array;
     }
+
+    if (this->normalized_array != NULL) {
+        delete this->normalized_array;
+    }
 }
 
 /**
  * Sets the value of index (i, j) to value.
  */
-void Matrix2D::set(int row, int column, uint8_t value) {
+void Matrix2D::set(int row, int column, int value) {
     this->array->at(coordinate_to_index2D(row, column)) = value;
 }
 
 /**
  * Gets the value stored at index (row, column);
  */
-uint8_t Matrix2D::get(int row, int column) {
+int Matrix2D::get(int row, int column) {
     return this->array->at(coordinate_to_index2D(row, column));
 }
 
@@ -289,8 +309,7 @@ Matrix2D operator+(Matrix2D& m1, Matrix2D& m2) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) + m2.get(i, j);
-            new_value = new_value > 255 ? 255 : new_value;
-            plus.set(i, j, (uint8_t) new_value);
+            plus.set(i, j, new_value);
         }
     }
 
@@ -305,8 +324,7 @@ Matrix2D operator+(Matrix2D& m1, int &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) + scalar;
-            new_value = new_value > 255 ? 255 : new_value;
-            m1.set(i, j, (uint8_t) new_value);
+            m1.set(i, j, new_value);
         }
     }
 
@@ -322,8 +340,7 @@ Matrix2D operator-(Matrix2D& m1, Matrix2D& m2) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) - m2.get(i, j);
-            new_value = new_value < 0 ? 0 : new_value;
-            minus.set(i, j, (uint8_t) new_value);
+            minus.set(i, j, new_value);
         }
     }
 
@@ -338,8 +355,7 @@ Matrix2D operator-(Matrix2D& m1, int &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) - scalar;
-            new_value = new_value < 0 ? 0 : new_value;
-            m1.set(i, j, (uint8_t) new_value);
+            m1.set(i, j, new_value);
         }
     }
 
@@ -359,8 +375,7 @@ Matrix2D operator*(Matrix2D& m1, Matrix2D& m2) {
             for (int k = 0; k < m1.columns; ++k) {
                 sum += m1.get(i, k) * m2.get(k, j);
             }
-            sum = sum > 255 ? 255 : sum;
-            mult.set(i, j, (uint8_t) sum);
+            mult.set(i, j, sum);
         }
     }
 
@@ -375,8 +390,7 @@ Matrix2D operator*(Matrix2D& m1, int &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) * scalar;
-            new_value = new_value > 255 ? 255 : new_value;
-            m1.set(i, j, (uint8_t) new_value);
+            m1.set(i, j, new_value);
         }
     }
 
@@ -387,13 +401,26 @@ Matrix2D operator*(Matrix2D& m1, int &scalar) {
  * Prints the matrix.
  */
 void Matrix2D::print() {
-    int cols = this->columns;
-    for (long unsigned int i = 0; i < this->array->size(); i++) {
-        if ((i + 1) % cols == 0) {
-            std::cout << (int) this->array->at(i) << '\n';
+    if (!this->normalized_array) {
+        int cols = this->columns;
+        for (long unsigned int i = 0; i < this->array->size(); i++) {
+            if ((i + 1) % cols == 0) {
+                std::cout << (int) this->array->at(i) << '\n';
+            }
+            else {
+                std::cout << (int) this->array->at(i) << " , ";
+            }
         }
-        else {
-            std::cout << (int) this->array->at(i) << " , ";
+    }
+    else {
+        int cols = this->columns;
+        for (long unsigned int i = 0; i < this->array->size(); i++) {
+            if ((i + 1) % cols == 0) {
+                printf("%f\n", this->normalized_array->at(i));
+            }
+            else {
+                printf("%f , ", this->normalized_array->at(i));
+            }
         }
     }
 }
@@ -433,6 +460,16 @@ void Matrix2D::test_matrix2D() {
     std::cout << "testing multiplication" << std::endl;
     Matrix2D mult = matA * matB;
     mult.print();
+    std::cout << std::endl;
+
+    std::cout << "testing flatten" << std::endl;
+    mult.flatten();
+    mult.print();
+    std::cout << std::endl;
+
+    std::cout << "testing normalization" << std::endl;
+    plus.normalize();
+    plus.print();
     std::cout << std::endl;
 }
 

@@ -13,15 +13,18 @@ class Matrix2D {
         Matrix2D(): rows{0}, columns{0}, array{NULL} {};
         Matrix2D(int rows, int columns);
         Matrix2D(int rows, int columns, std::vector<uint8_t> *data);
+        Matrix2D(int rows, int columns, std::vector<int> *data): rows{rows}, columns{columns}, array{data} {};
         ~Matrix2D();
 
         int get_rows() const {return rows;};
         int get_columns() const {return columns;};
 
-        uint8_t get(int row, int column);
-        void set(int row, int column, uint8_t value);
+        int get(int row, int column);
+        void set(int row, int column, int value);
         void print();
         void reshape(int rows, int columns);
+        void normalize();
+        void flatten() {rows = 0; columns = array->size();};
         static void test_matrix2D();
 
         friend Matrix2D operator+(Matrix2D &m1, Matrix2D &m2);
@@ -35,7 +38,8 @@ class Matrix2D {
     private:
         int rows;
         int columns;
-        std::vector<uint8_t> *array;
+        std::vector<int> *array;
+        std::vector<double> *normalized_array = NULL;
 
         bool dynamic = false;
 
