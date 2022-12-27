@@ -274,7 +274,7 @@ const std::vector<int> Matrix2D::index_to_coordinate2D(int index) {
  * Reshapes the matrix.
  */
 void Matrix2D::reshape(int rows, int columns) {
-    assert(rows * columns == this->array->size());
+    assert(rows * columns == (int) this->array->size());
 
     this->rows = rows;
     this->columns = columns;

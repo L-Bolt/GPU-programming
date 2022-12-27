@@ -50,15 +50,14 @@ bool Gpu::build_program() {
 cl::Program Gpu::make_program() {
     // TODO als de gpu_test() functie niet hello world print moet deze code weer
     // aan.
-    // std::vector<std::string> kernels;
-    // for (std::string source_path : this->source_paths) {
-    //     std::ifstream kernel_file(source_path);
-    //     std::string src(std::istreambuf_iterator<char>(kernel_file), (std::istreambuf_iterator<char>()));
-    //     kernels.push_back(src);
-    // }
-    // cl::Program program(this->context, kernels);
+    std::vector<std::string> kernels;
+    for (std::string source_path : this->source_paths) {
+        std::ifstream kernel_file(source_path);
+        std::string src(std::istreambuf_iterator<char>(kernel_file), (std::istreambuf_iterator<char>()));
+        kernels.push_back(src);
+    }
+    cl::Program program(this->context, kernels);
 
-    cl::Program program(this->context, this->source_paths);
     return program;
 }
 
