@@ -80,20 +80,3 @@ std::vector<double> np::applyFunction(std::vector<double> &v, double (*active_fn
 
     return vr;
 }
-
-// apply a function to every element of the matrix
-Matrix2D<double> np::applyFunction(Matrix2D<double> &m1, double (*active_fn)(double)){
-    Matrix2D<double> m3(m1.get_rows(), m1.get_columns());
-    for(unsigned int i=0; i < m1.get_rows(); i++){
-        for(unsigned int j=0; j < m1.get_columns(); j++){
-            double ret = (*active_fn)(m1.get(i, j));
-            if (isnan(ret)) {
-                m3.set(i, j, 0);
-            }
-            else {
-                m3.set(i, j, ret);
-            }
-        }
-    }
-    return m3;
-}

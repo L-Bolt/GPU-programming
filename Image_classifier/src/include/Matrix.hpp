@@ -25,6 +25,7 @@ class Matrix2D {
         void reshape(int rows, int columns);
         Matrix2D<double> normalize(double mean, double stdev);
         Matrix2D<double> normalize();
+        Matrix2D<double> applyFunction(double (*active_fn)(double));
         T element_sum();
         void flatten() {rows = 1; columns = array.size();};
         static void test_matrix2D();
@@ -106,9 +107,9 @@ Matrix2D<T>::Matrix2D(int rows, int columns, bool init) {
 
     this->array = std::vector<T>(this->rows * this->columns);
     if (init) {
-        std::uniform_real_distribution<T> unif(-1,1);
+        std::uniform_real_distribution<T> unif(-1, 1);
         for (int i = 0; i < this->array.size(); i++) {
-            double a = unif(random_engine);
+            T a = unif(random_engine);
             this->array.at(i) = a;
         }
     }
@@ -149,6 +150,24 @@ Matrix2D<double> Matrix2D<T>::normalize() {
     }
 
     return normalized_matrix;
+}
+
+template<typename T>
+Matrix2D<double> Matrix2D<T>::applyFunction(double (*active_fn)(double)) {
+    Matrix2D<double> m3(this->get_rows(), this->get_columns());
+    for (size_t i = 0; i < this->get_rows(); i++){
+        for (size_t j = 0; j < this->get_columns(); j++){
+            double ret = (*active_fn)(this->get(i, j));
+            if (isnan(ret)) {
+                m3.set(i, j, 0);
+            }
+            else {
+                m3.set(i, j, ret);
+            }
+        }
+    }
+
+    return m3;
 }
 
 template<typename T>
@@ -652,6 +671,14 @@ void Matrix2D<T>::test_matrix2D() {
     std::cout << "testing normalization" << std::endl;
     Matrix2D<double> normie = matD.normalize(0.5, 0.5);
     normie.print(true);
+    std::cout << std::endl;
+
+    std::cout << "testing randomization" << std::endl;
+    Matrix2D<double> rand(3, 3, true);
+    Matrix2D<double> rand2(3, 3, true);
+    rand.print(true);
+    std::cout << std::endl;
+    rand2.print(true);
     std::cout << std::endl;
 }
 

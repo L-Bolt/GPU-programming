@@ -5,18 +5,15 @@
 #include <string>
 #include <cmath>
 #include <random>
-#include <float.h>
 #include <time.h>
 
-#include "Matrix.hpp"
 
+extern std::default_random_engine random_engine;
 
 struct Shape{
 	int rows;
 	int columns;
 };
-
-extern std::default_random_engine random_engine;
 
 namespace fns{
 	double relu(double x);
@@ -34,7 +31,6 @@ namespace util {
 
 namespace np {
     std::vector<double> applyFunction(std::vector<double> &v, double (*function)(double));
-    Matrix2D<double> applyFunction(Matrix2D<double> & m1, double (*function)(double));
 }
 
 #endif
