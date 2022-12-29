@@ -6,8 +6,7 @@
 #include <iostream>
 #include <assert.h>
 
-// Todo: Fix inheritance van een algemene Matrix class. En dan Matrix1D en Matrix3D
-// met override functies (virtual functies).
+
 template<typename T>
 class Matrix2D {
     public:
@@ -143,17 +142,6 @@ Matrix2D<double> Matrix2D<T>::normalize() {
 }
 
 /**
- * Matrix2D deconstructor. Frees the array pointer if this matrix allocated this
- * pointer itself without getting it passed to it by a parameter.
- */
-// template<typename T>
-// Matrix2D<T>::~Matrix2D() {
-//     if (this->dynamic) {
-//         delete this->array;
-//     }
-// }
-
-/**
  * Sets the value of index (i, j) to value.
  */
 template<typename T>
@@ -206,7 +194,7 @@ void Matrix2D<T>::reshape(int rows, int columns) {
 }
 
 /**
- * Adds m2 to m1. Accounts for overflow by limiting the result value to 255.
+ * Adds m2 to m1.
  */
 template<typename T>
 Matrix2D<T> operator+(Matrix2D<T>& m1, Matrix2D<T>& m2) {
@@ -224,8 +212,7 @@ Matrix2D<T> operator+(Matrix2D<T>& m1, Matrix2D<T>& m2) {
 }
 
 /**
- * Adds scalar to every index in m1. Accounts for overflow by limiting the result
- * to 255.
+ * Adds scalar to every index in m1.
  */
 template<typename T>
 Matrix2D<T> operator+(Matrix2D<T>& m1, int &scalar) {
@@ -240,7 +227,7 @@ Matrix2D<T> operator+(Matrix2D<T>& m1, int &scalar) {
 }
 
 /**
- * Subtracts m2 from m1. Accounts for underflow by limiting the result value to 0.
+ * Subtracts m2 from m1.
  */
 template<typename T>
 Matrix2D<T> operator-(Matrix2D<T>& m1, Matrix2D<T>& m2) {
@@ -258,8 +245,7 @@ Matrix2D<T> operator-(Matrix2D<T>& m1, Matrix2D<T>& m2) {
 }
 
 /**
- * Subtracts scalar to every index in m1. Accounts for underflow by limiting the
- * result to 0.
+ * Subtracts scalar to every index in m1.
  */
 template<typename T>
 Matrix2D<T> operator-(Matrix2D<T>& m1, int &scalar) {
@@ -274,7 +260,7 @@ Matrix2D<T> operator-(Matrix2D<T>& m1, int &scalar) {
 }
 
 /**
- * Multiply m1 by m2. Accounts for overflow by limiting the value to 255.
+ * Multiply m1 by m2.
  */
 template<typename T>
 Matrix2D<T> operator*(Matrix2D<T>& m1, Matrix2D<T>& m2) {
@@ -295,8 +281,7 @@ Matrix2D<T> operator*(Matrix2D<T>& m1, Matrix2D<T>& m2) {
 }
 
 /**
- * Multiplies every index of m1 by scalar. Accounts for overflow by limiting the
- * result  to 255.
+ * Multiplies every index of m1 by scalar.
  */
 template<typename T>
 Matrix2D<T> operator*(Matrix2D<T>& m1, int &scalar) {
@@ -502,8 +487,7 @@ Matrix3D<T> operator+(Matrix3D<T>& m1, Matrix3D<T>& m2) {
 }
 
 /**
- * Adds scalar to every index of m1. Accounts for overflow by limiying the
- * result to 255.
+ * Adds scalar to every index of m1.
  */
 template<typename T>
 Matrix3D<T> operator+(Matrix3D<T>& m1, int &scalar) {
@@ -540,8 +524,7 @@ Matrix3D<T> operator-(Matrix3D<T>& m1, Matrix3D<T>& m2) {
 }
 
 /**
- * Subtracts scalar from every index in m1. Accounts for underflow by limiting the
- * result to 255.
+ * Subtracts scalar from every index in m1.
  */
 template<typename T>
 Matrix3D<T> operator-(Matrix3D<T>& m1, int &scalar) {
@@ -583,8 +566,7 @@ Matrix2D<T> operator*(Matrix3D<T>& m1, Matrix3D<T>& m2) {
 }
 
 /**
- * Multiplies every index of m1 by scalar. Accounts for overflow by limiting the
- * result  to 255.
+ * Multiplies every index of m1 by scalar.
  */
 template<typename T>
 Matrix3D<T> operator*(Matrix3D<T>& m1, int &scalar) {
