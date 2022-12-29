@@ -6,12 +6,13 @@
 #include <iostream>
 #include <assert.h>
 
+#include "util.h"
 
 template<typename T>
 class Matrix2D {
     public:
         Matrix2D(): rows{0}, columns{0}, array{NULL} {};
-        Matrix2D(int rows, int columns);
+        Matrix2D(int rows, int columns, bool init=false);
         Matrix2D(int rows, int columns, std::vector<T> &data);
         ~Matrix2D() = default;
 
@@ -24,6 +25,7 @@ class Matrix2D {
         void reshape(int rows, int columns);
         Matrix2D<double> normalize(double mean, double stdev);
         Matrix2D<double> normalize();
+        T element_sum();
         void flatten() {rows = 1; columns = array.size();};
         static void test_matrix2D();
 
@@ -97,13 +99,22 @@ Matrix2D<T>::Matrix2D(int rows, int columns, std::vector<T> &data) {
 }
 
 template<typename T>
-Matrix2D<T>::Matrix2D(int rows, int columns) {
+Matrix2D<T>::Matrix2D(int rows, int columns, bool init) {
     this->rows = rows;
     this->columns = columns;
     this->dynamic = true;
 
     this->array = std::vector<T>(this->rows * this->columns);
-    std::fill(this->array.begin(), this->array.end(), 0);
+    if (init) {
+        std::uniform_real_distribution<T> unif(-1,1);
+        for (int i = 0; i < this->array.size(); i++) {
+            double a = unif(random_engine);
+            this->array.at(i) = a;
+        }
+    }
+    else {
+        std::fill(this->array.begin(), this->array.end(), 0);
+    }
 }
 
 template<typename T>
@@ -138,6 +149,16 @@ Matrix2D<double> Matrix2D<T>::normalize() {
     }
 
     return normalized_matrix;
+}
+
+template<typename T>
+T Matrix2D<T>::element_sum() {
+    T sum = 0;
+    for (size_t i = 0; i < this->array.size(); i++) {
+        sum += this->array.at(i);
+    }
+
+    return sum;
 }
 
 /**
