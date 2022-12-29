@@ -112,7 +112,6 @@ Matrix2D<double> Matrix2D<T>::normalize(double mean, double stdev) {
 
     for (int i = 0; i < this->rows; i++) {
         for (int j = 0; j < this->columns; j++) {
-            int index = coordinate_to_index2D(i, j);
             double value = ((double) (this->get(i, j) / (double) UINT8_MAX) - mean) / stdev;
             normalized_matrix.set(i, j, value);
         }

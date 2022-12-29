@@ -57,7 +57,7 @@ endif()
 add_executable (image_classifier ${cnn_src} ${CORE_SRC} ${OPENCL_SRC} )
 
 target_compile_options(image_classifier PUBLIC
-  # $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>
 )
 
 target_include_directories (image_classifier PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "CORE" "OPENCL" "src" "lib")
