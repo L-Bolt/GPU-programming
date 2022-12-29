@@ -107,9 +107,9 @@ Matrix2D<T>::Matrix2D(int rows, int columns, bool init) {
 
     this->array = std::vector<T>(this->rows * this->columns);
     if (init) {
-        std::uniform_real_distribution<T> unif(-1, 1);
-        for (int i = 0; i < this->array.size(); i++) {
-            T a = unif(random_engine);
+        std::uniform_real_distribution<double> unif(-1, 1);
+        for (size_t i = 0; i < this->array.size(); i++) {
+            double a = unif(random_engine);
             this->array.at(i) = a;
         }
     }
