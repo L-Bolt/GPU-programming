@@ -11,8 +11,5 @@ int main() {
         gpu->test();
     }
 
-    Matrix2D::test_matrix2D();
-
     dataset->display_all_images();
-
 }

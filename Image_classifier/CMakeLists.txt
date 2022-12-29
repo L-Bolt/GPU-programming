@@ -39,7 +39,7 @@ elseif(MACOSX)
   include_directories("/opt/homebrew/Cellar/boost/1.80.0/include")
 endif()
 
-file(GLOB cnn_src CONFIGURE_DEPENDS "src/include/*.h" "src/*.cpp")
+file(GLOB cnn_src CONFIGURE_DEPENDS "src/include/*.h" "src/*.cpp" "src/include/*.hpp")
 
 #compile files in COre and OpenCL external libs
 file(GLOB CORE_SRC "lib/Core/*.cpp" "lib/Core/*.c")

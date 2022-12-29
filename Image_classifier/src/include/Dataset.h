@@ -24,7 +24,7 @@ class Dataset {
 
         void display_all_images();
         void write_images_to_disk();
-        std::vector<uint8_t> &get_image_data(int &index);
+        Image &get_image(int index);
 
     private:
         std::vector<std::vector<uint8_t>> buffer;

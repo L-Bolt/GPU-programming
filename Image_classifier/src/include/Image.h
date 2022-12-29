@@ -5,7 +5,7 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 
-#include "include/Matrix.h"
+#include "include/Matrix.hpp"
 
 #define CIFAR_IMAGE_SIZE 32
 #define CIFAR_IMAGE_COLOR_CHANNELS 3
@@ -21,8 +21,7 @@ class Image {
         short get_class();
 
     private:
-        std::vector<uint8_t> *data;
-        Matrix3D matrix;
+        Matrix3D<uint8_t> matrix;
         uint8_t classifier;
 
         cv::Mat array_to_cv_mat();

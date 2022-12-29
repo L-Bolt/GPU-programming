@@ -9,6 +9,8 @@ Dataset::Dataset(std::string path) {
     try {
         this->buffer = make_buffer(path);
         this->image_buffer = make_images(this->buffer);
+        std::cout << "\033[1;32mDataset has been read into memory.\033[0m\n" <<std::endl;
+
         this->training_set = std::vector<Image>(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
         this->test_set = std::vector<Image>(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
 
@@ -51,7 +53,6 @@ std::vector<std::vector<uint8_t>> Dataset::make_buffer(std::string& path) {
         file.close();
     }
 
-    std::cout << "\033[1;32mDataset has been read into memory.\033[0m\n" <<std::endl;
     return util::split_vector(buffer, CIFAR_IMAGE_COUNT);
 }
 
@@ -74,8 +75,8 @@ std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffe
  * @param index The index of the image in the buffer.
  * @return std::vector<uint8_t>& Reference to the data of the image.
  */
-std::vector<uint8_t> &Dataset::get_image_data(int &index) {
-    return this->buffer[index];
+Image &Dataset::get_image(int index) {
+    return this->image_buffer.at(index);
 }
 
 /**
@@ -104,8 +105,7 @@ void Dataset::write_images_to_disk() {
             std::string image_name = std::to_string(j);
             std::string path = folder + '/' + image_name + ".jpg";
 
-            std::vector<uint8_t> img_data = this->buffer[i * CIFAR_IMAGES_PER_FILE + j];
-            Image img(&img_data);
+            Image img = get_image(i * CIFAR_IMAGES_PER_FILE + j);
             std::cout << "saving image: " << (j + (CIFAR_IMAGES_PER_FILE * (i)) + 1) <<std::endl;
             img.save_image(path);
         }

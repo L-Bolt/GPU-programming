@@ -3,9 +3,8 @@
 
 Image::Image(std::vector<uint8_t> *data) {
     this->classifier = data->at(0);
-    this->data = data;
 
-    this->matrix = Matrix3D(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
+    this->matrix = Matrix3D<uint8_t>(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
 }
 
 /**
