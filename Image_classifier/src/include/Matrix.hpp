@@ -57,7 +57,7 @@ class Matrix3D {
         Matrix3D(int rows, int columns, int channels, std::vector<T> *data);
         template<typename T2>
         Matrix3D(int rows, int columns, int channels, std::vector<T2> *data);
-        ~Matrix3D();
+        ~Matrix3D() = default;
 
         int get_rows() const {return rows;};
         int get_columns() const {return columns;};
@@ -401,12 +401,12 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels) {
  * Matrix2D deconstructor. Frees the array pointer if this matrix allocated this
  * pointer itself without getting it passed to it by a parameter.
  */
-template<typename T>
-Matrix3D<T>::~Matrix3D() {
-    if (this->dynamic) {
-        delete this->array;
-    }
-}
+// template<typename T>
+// Matrix3D<T>::~Matrix3D() {
+//     if (this->dynamic) {
+//         delete this->array;
+//     }
+// }
 
 /**
  * Sets the value at the coordinate (row, column, channel) to the given value.
