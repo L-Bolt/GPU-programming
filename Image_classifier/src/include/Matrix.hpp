@@ -27,6 +27,7 @@ class Matrix2D {
         Matrix2D<double> normalize();
         Matrix2D<double> applyFunction(double (*active_fn)(double));
         T element_sum();
+
         void flatten() {rows = 1; columns = array.size();};
         static void test_matrix2D();
 
@@ -34,9 +35,9 @@ class Matrix2D {
         template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
         template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
 
-        template<typename T2> friend Matrix2D<T2> operator+(Matrix2D<T2> &m1, int &scalar);
-        template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, int &scalar);
-        template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, int &scalar);
+        template<typename T2> friend Matrix2D<T2> operator+(Matrix2D<T2> &m1, T2 &scalar);
+        template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, T2 &scalar);
+        template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, T2 &scalar);
 
     private:
         int rows;
@@ -74,9 +75,9 @@ class Matrix3D {
         template<typename T2> friend Matrix3D<T2> operator-(Matrix3D<T2> &m1, Matrix3D<T2> &m2);
         template<typename T2> friend Matrix2D<T> operator*(Matrix3D<T2> &m1, Matrix3D<T2> &m2);
 
-        template<typename T2> friend Matrix3D<T2> operator+(Matrix3D<T2> &m1, int &scalar);
-        template<typename T2> friend Matrix3D<T2> operator-(Matrix3D<T2> &m1, int &scalar);
-        template<typename T2> friend Matrix3D<T2> operator*(Matrix3D<T2> &m1, int &scalar);
+        template<typename T2> friend Matrix3D<T2> operator+(Matrix3D<T2> &m1, T2 &scalar);
+        template<typename T2> friend Matrix3D<T2> operator-(Matrix3D<T2> &m1, T2 &scalar);
+        template<typename T2> friend Matrix3D<T2> operator*(Matrix3D<T2> &m1, T2 &scalar);
 
     private:
         int rows;
@@ -155,10 +156,10 @@ Matrix2D<double> Matrix2D<T>::normalize() {
 template<typename T>
 Matrix2D<double> Matrix2D<T>::applyFunction(double (*active_fn)(double)) {
     Matrix2D<double> m3(this->get_rows(), this->get_columns());
-    for (size_t i = 0; i < this->get_rows(); i++){
-        for (size_t j = 0; j < this->get_columns(); j++){
+    for (int i = 0; i < this->get_rows(); i++){
+        for (int j = 0; j < this->get_columns(); j++){
             double ret = (*active_fn)(this->get(i, j));
-            if (isnan(ret)) {
+            if (std::isnan(ret)) {
                 m3.set(i, j, 0);
             }
             else {
@@ -254,7 +255,7 @@ Matrix2D<T> operator+(Matrix2D<T>& m1, Matrix2D<T>& m2) {
  * Adds scalar to every index in m1.
  */
 template<typename T>
-Matrix2D<T> operator+(Matrix2D<T>& m1, int &scalar) {
+Matrix2D<T> operator+(Matrix2D<T>& m1, T &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) + scalar;
@@ -287,7 +288,7 @@ Matrix2D<T> operator-(Matrix2D<T>& m1, Matrix2D<T>& m2) {
  * Subtracts scalar to every index in m1.
  */
 template<typename T>
-Matrix2D<T> operator-(Matrix2D<T>& m1, int &scalar) {
+Matrix2D<T> operator-(Matrix2D<T>& m1, T &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) - scalar;
@@ -323,7 +324,7 @@ Matrix2D<T> operator*(Matrix2D<T>& m1, Matrix2D<T>& m2) {
  * Multiplies every index of m1 by scalar.
  */
 template<typename T>
-Matrix2D<T> operator*(Matrix2D<T>& m1, int &scalar) {
+Matrix2D<T> operator*(Matrix2D<T>& m1, T &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) * scalar;
@@ -529,7 +530,7 @@ Matrix3D<T> operator+(Matrix3D<T>& m1, Matrix3D<T>& m2) {
  * Adds scalar to every index of m1.
  */
 template<typename T>
-Matrix3D<T> operator+(Matrix3D<T>& m1, int &scalar) {
+Matrix3D<T> operator+(Matrix3D<T>& m1, T &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             for (int k = 0; k < m1.channels; k++) {
@@ -566,7 +567,7 @@ Matrix3D<T> operator-(Matrix3D<T>& m1, Matrix3D<T>& m2) {
  * Subtracts scalar from every index in m1.
  */
 template<typename T>
-Matrix3D<T> operator-(Matrix3D<T>& m1, int &scalar) {
+Matrix3D<T> operator-(Matrix3D<T>& m1, T &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             for (int k = 0; k < m1.channels; k++) {
@@ -608,7 +609,7 @@ Matrix2D<T> operator*(Matrix3D<T>& m1, Matrix3D<T>& m2) {
  * Multiplies every index of m1 by scalar.
  */
 template<typename T>
-Matrix3D<T> operator*(Matrix3D<T>& m1, int &scalar) {
+Matrix3D<T> operator*(Matrix3D<T>& m1, T &scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             for (int k = 0; k < m1.channels; k++) {
