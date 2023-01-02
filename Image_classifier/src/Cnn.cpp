@@ -39,8 +39,6 @@ void CNN::train(std::vector<Image> &Xtrain,
 			std::vector<double> delta_L = np::subtract(activations.back(), Ytrain[it]);
 
 			back_propagate(delta_L, conv_activations, activations, Xtrain[it], fns::relu_gradient, learning_rate);
-
-			it += 1;
 		}
 		std::cout << "epoch: " << epoch << " error: " << (error / Xtrain.size()) << std::endl ;
 	}

@@ -112,8 +112,9 @@ std::vector<double> np::subtract(std::vector<double> & v1, std::vector<double> &
 	assert(v1.size() == v2.size());
 
 	std::vector<double> vr(v1.size());
-	for(unsigned int i=0; i < v1.size(); i++){
+	for (size_t i = 0; i < v1.size(); i++){
 		vr.at(i) = v1.at(i) - v2.at(i);
 	}
+
 	return vr;
 }
