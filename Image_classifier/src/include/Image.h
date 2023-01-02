@@ -20,6 +20,9 @@ class Image {
         void save_image(std::string &path);
         short get_class();
 
+        Matrix3D<double> normalize() {return matrix.normalize();};
+        int get_size() const {return CIFAR_IMAGE_SIZE;};
+
     private:
         Matrix3D<uint8_t> matrix;
         uint8_t classifier;

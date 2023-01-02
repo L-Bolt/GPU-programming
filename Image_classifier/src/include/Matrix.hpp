@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <assert.h>
+#include <float.h>
 
 #include "util.h"
 
@@ -14,6 +15,7 @@ class Matrix2D {
         Matrix2D(): rows{0}, columns{0}, array{NULL} {};
         Matrix2D(int rows, int columns, bool init=false);
         Matrix2D(int rows, int columns, std::vector<T> &data);
+        Matrix2D(std::vector<T> &v1, std::vector<T> &v2, int slice=0);
         ~Matrix2D() = default;
 
         int get_rows() const {return rows;};
@@ -23,12 +25,16 @@ class Matrix2D {
         void set(int row, int column, T value);
         void print(double floating_point=false);
         void reshape(int rows, int columns);
+        Matrix2D<T> transpose();
         Matrix2D<double> normalize(double mean, double stdev);
         Matrix2D<double> normalize();
         Matrix2D<double> applyFunction(double (*active_fn)(double));
+        Matrix2D<double> max_pooling(Shape &pooling_window);
+        std::vector<T> dot(std::vector<T> &v, int slice=0);
         T element_sum();
 
         void flatten() {rows = 1; columns = array.size();};
+        std::vector<T> flatten_to_vector(int extra = 1);
         static void test_matrix2D();
 
         template<typename T2> friend Matrix2D<T2> operator+(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
@@ -54,7 +60,7 @@ template<typename T>
 class Matrix3D {
     public:
         Matrix3D(): rows{0}, columns{0}, channels{0}, array{NULL} {};
-        Matrix3D(int rows, int columns, int channels);
+        Matrix3D(int rows, int columns, int channels, bool init=false);
         Matrix3D(int rows, int columns, int channels, std::vector<T> *data);
         template<typename T2>
         Matrix3D(int rows, int columns, int channels, std::vector<T2> *data);
@@ -67,8 +73,10 @@ class Matrix3D {
         T get(int row, int column, int channel);
         void set(int row, int column, int channel, T value);
         void print(double floating_point=false);
-        Matrix3D<int> to_int();
         Matrix3D<double> normalize(double mean, double stdev);
+        Matrix3D<double> normalize();
+        Matrix2D<double> convolve(Matrix3D<double> &kernel, double bias=1);
+        Matrix2D<T> get_plane(int channel);
         static void test_matrix3D();
 
         template<typename T2> friend Matrix3D<T2> operator+(Matrix3D<T2> &m1, Matrix3D<T2> &m2);
@@ -91,7 +99,6 @@ class Matrix3D {
         int coordinate_to_index3D(int i, int j, int k);
         const std::vector<int> index_to_coordinate3D(int index);
 };
-
 
 template<typename T>
 Matrix2D<T>::Matrix2D(int rows, int columns, std::vector<T> &data) {
@@ -117,6 +124,22 @@ Matrix2D<T>::Matrix2D(int rows, int columns, bool init) {
     else {
         std::fill(this->array.begin(), this->array.end(), 0);
     }
+}
+
+template<typename T>
+Matrix2D<T>::Matrix2D(std::vector<T> &v1, std::vector<T> &v2, int slice) {
+    this->rows = (int) v1.size();
+    this->columns = (int) v2.size() - slice;
+
+    std::vector<T> data(this->rows * this->columns);
+
+    for (int i = 0; i < this->rows; i++){
+        for (int j = 0; j< this->columns; j++){
+            data.at(i * this->rows + j) = v1.at(i) * v2.at(j);
+        }
+    }
+
+    this->array = data;
 }
 
 template<typename T>
@@ -172,6 +195,26 @@ Matrix2D<double> Matrix2D<T>::applyFunction(double (*active_fn)(double)) {
 }
 
 template<typename T>
+Matrix2D<double> Matrix2D<T>::max_pooling(Shape &pooling_window) {
+    Matrix2D<double> pooled_mat(this->rows / pooling_window.rows, this->columns / pooling_window.columns);
+
+    for (int i = 0; i < this->rows; i += pooling_window.rows) {
+        for (int j = 0; j < this->columns; j += pooling_window.columns) {
+            double max = -DBL_MAX;
+            for (int x = i; x < i + pooling_window.rows; x++) {
+                for (int y = j; y < j + pooling_window.columns; y++) {
+                    double val_at_index = this->get(x, y);
+                    max = val_at_index > max ? val_at_index : max;
+                }
+            }
+            pooled_mat.set(i / pooling_window.rows, j / pooling_window.columns, max);
+        }
+    }
+
+    return pooled_mat;
+}
+
+template<typename T>
 T Matrix2D<T>::element_sum() {
     T sum = 0;
     for (size_t i = 0; i < this->array.size(); i++) {
@@ -179,6 +222,30 @@ T Matrix2D<T>::element_sum() {
     }
 
     return sum;
+}
+
+template<typename T>
+std::vector<T> Matrix2D<T>::flatten_to_vector(int extra) {
+    std::vector<T> flattened_vec(this->rows * this->columns + extra);
+
+    for (int i = 0; i < this->rows * this->columns; i++) {
+        flattened_vec.at(i) = this->array.at(i);
+    }
+
+    return flattened_vec;
+}
+
+template<typename T>
+Matrix2D<T> Matrix2D<T>::transpose() {
+    Matrix2D<T> m3(this->columns, this->rows);
+
+    for (int i = 0; i < this->rows; i++) {
+        for (int j = 0; j < this->columns; j++){
+            m3.set(j, i, this->get(i, j));
+        }
+    }
+
+    return m3;
 }
 
 /**
@@ -231,6 +298,22 @@ void Matrix2D<T>::reshape(int rows, int columns) {
 
     this->rows = rows;
     this->columns = columns;
+}
+
+template<typename T>
+std::vector<T> Matrix2D<T>::dot(std::vector<T> &v, int slice) {
+    assert(this->columns == (int) v.size() - slice);
+
+    std::vector<T> res(this->rows * (this->columns - slice));
+    for (int i = 0; i < this->rows; i++){
+        T w = 0;
+        for (int j = 0; j < this->columns - slice; j++){
+            w += (this->get(i, j) * v.at(j));
+        }
+        res.at(i) = w;
+    }
+
+    return res;
 }
 
 /**
@@ -389,13 +472,22 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels, std::vector<T> *data)
 }
 
 template<typename T>
-Matrix3D<T>::Matrix3D(int rows, int columns, int channels) {
+Matrix3D<T>::Matrix3D(int rows, int columns, int channels, bool init) {
     this->rows = rows;
     this->columns = columns;
     this->channels = channels;
     this->dynamic = true;
+    this->offset = 0;
 
-    this->array = new std::vector<T>((rows * columns * channels) + 1);
+    this->array = new std::vector<T>((rows * columns * channels));
+
+    if (init) {
+        std::uniform_real_distribution<double> unif(-1, 1);
+        for (size_t i = 0; i < this->array->size(); i++) {
+            double a = unif(random_engine);
+            this->array->at(i) = a;
+        }
+    }
 }
 
 /**
@@ -475,13 +567,54 @@ Matrix3D<double> Matrix3D<T>::normalize(double mean, double stdev) {
 }
 
 template<typename T>
-Matrix3D<int> Matrix3D<T>::to_int() {
-    Matrix3D<int> int_matrix(this->rows, this->columns, this->channels);
-    for (size_t i = 0; i < this->array->size(); i++) {
-        int_matrix.array->at(i) = this->array->at(i);
+Matrix3D<double> Matrix3D<T>::normalize() {
+    Matrix3D<double> normalized_matrix(this->rows, this->columns, this->channels);
+
+    for (int i = 0; i < this->rows; i++) {
+        for (int j = 0; j < this->columns; j++) {
+            for (int k = 0; k < this->channels; k++) {
+                double value = ((double) (this->get(i, j, k) / (double) UINT8_MAX) );
+                normalized_matrix.set(i, j, k, value);
+            }
+        }
     }
 
-    return int_matrix;
+    return normalized_matrix;
+}
+
+template<typename T>
+Matrix2D<double> Matrix3D<T>::convolve(Matrix3D<double> &kernel, double bias) {
+    Matrix2D<double> convolved_mat(this->rows - kernel.get_rows() + 1, this->columns - kernel.get_columns() + 1);
+
+    for (int i = 0; i < convolved_mat.get_rows(); i++) {
+        for (int j = 0; j < convolved_mat.get_columns(); j++) {
+            double value = 0.0;
+            for (int h = i; h < i + kernel.get_rows(); h++) {
+                for (int w = j; w < j + kernel.get_columns(); w++) {
+                    for (int channel = 0; channel < this->channels; channel++) {
+                        value += kernel.get(h - i, w - j, channel) * this->get(h, w, channel);
+                    }
+                }
+            }
+            convolved_mat.set(i, j, value + bias);
+        }
+    }
+
+    return convolved_mat;
+}
+
+template<typename T>
+Matrix2D<T> Matrix3D<T>::get_plane(int channel) {
+    assert(channel < this->channels && channel > 0);
+
+    Matrix2D<T> plane(this->rows, this->columns);
+    for (int i = 0; i < this->rows; i++) {
+        for (int j = 0; j < this->channels; j++) {
+            plane.set(i, j, this->get(i, j, channel));
+        }
+    }
+
+    return plane;
 }
 
 /**
@@ -681,6 +814,15 @@ void Matrix2D<T>::test_matrix2D() {
     std::cout << std::endl;
     rand2.print(true);
     std::cout << std::endl;
+
+    std::cout << "testing maxpooling" << std::endl;
+    Matrix2D<double> img(4, 4, true);
+    img.print(true);
+    std::cout << std::endl;
+    Shape test = {2,2};
+    Matrix2D<double> pooled = img.max_pooling(test);
+    pooled.print(true);
+    std::cout << std::endl;
 }
 
 /**
@@ -711,6 +853,20 @@ void Matrix3D<T>::test_matrix3D() {
     std::cout << "testing normalization" << std::endl;
     Matrix3D<double> normie = matA.normalize(0.5, 0.5);
     normie.print(true);
+    std::cout << '\n';
+
+    std::cout << "testing randomizaion" << std::endl;
+    Matrix3D<double> randie(3, 3, 3, true);
+    randie.print(true);
+    std::cout << '\n';
+
+    std::cout << "testing convolution" << std::endl;
+    std::vector<double> i = {1, 2, 3, 1, 2, 3,1, 2, 3,      1, 2, 3,1, 2, 3,1, 2, 3,        1, 2, 3,1, 2, 3,1, 2, 3};
+    std::vector<double> kern = {1.5f, 1.5f, 2.6f,  1.5f,        2.0f, 2.0f, 2.0f, 2.0f,      3.0f, 3.0f, 3.0f, 3.0f};
+    Matrix3D<double> img(3, 3, 3, &i);
+    Matrix3D<double> kernel(2, 2, 3, &kern);
+    Matrix2D<double> convolved = img.convolve(kernel);
+    convolved.print(true);
     std::cout << '\n';
 }
 

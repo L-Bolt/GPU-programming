@@ -6,13 +6,19 @@
 #include <cmath>
 #include <random>
 #include <time.h>
-
+#include <assert.h>
 
 extern std::default_random_engine random_engine;
 
-struct Shape{
+struct Shape {
 	int rows;
 	int columns;
+};
+
+struct Shape3D {
+	int rows;
+	int columns;
+	int channels;
 };
 
 namespace fns{
@@ -31,6 +37,9 @@ namespace util {
 
 namespace np {
     std::vector<double> applyFunction(std::vector<double> &v, double (*function)(double));
+	std::vector<double> normalize(std::vector<double> &v);
+	std::vector<double> multiply(std::vector<double> &v1, std::vector<double> &v2);
+	std::vector<double> subtract(std::vector<double> & v1, std::vector<double> & v2);
 }
 
 #endif
