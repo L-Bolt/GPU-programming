@@ -12,7 +12,7 @@
 template<typename T>
 class Matrix2D {
     public:
-        Matrix2D(): rows{0}, columns{0}, array{NULL} {};
+        Matrix2D(): rows{0}, columns{0} {};
         Matrix2D(int rows, int columns, bool init=false);
         Matrix2D(int rows, int columns, std::vector<T> &data);
         Matrix2D(std::vector<T> &v1, std::vector<T> &v2, int slice=0);

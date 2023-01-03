@@ -5,11 +5,11 @@ cmake_minimum_required (VERSION 3.8)
 project(image_classifier)
 set (CMAKE_CXX_STANDARD 20)
 
-# if(NOT CMAKE_BUILD_TYPE)
-#   set(CMAKE_BUILD_TYPE Release)
-# endif()
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
-# set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 #Adding Opencl libs and include files to the proj
 find_package(OpenCL 1.2 REQUIRED)
@@ -63,7 +63,7 @@ endif()
 add_executable (image_classifier ${cnn_src} ${CORE_SRC} ${OPENCL_SRC} )
 
 target_compile_options(image_classifier PUBLIC
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O3 -Wall -Werror>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>: -Wall -Werror>
 )
 
 target_include_directories (image_classifier PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "CORE" "OPENCL" "src" "lib")
