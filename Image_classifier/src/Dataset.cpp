@@ -11,8 +11,8 @@ Dataset::Dataset(std::string path) {
         this->image_buffer = make_images(this->buffer);
         std::cout << "\033[1;32mDataset has been read into memory.\033[0m\n" <<std::endl;
 
-        this->training_set = std::vector<Image>(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE * 5);
-        this->test_set = std::vector<Image>(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE * 5, this->image_buffer.end());
+        this->training_set = std::vector<Image>(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
+        this->test_set = std::vector<Image>(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
 
         std::cout << "Images in training set: " << this->training_set.size() << '\n';
         std::cout << "Images in test set: " << this->test_set.size() << '\n' << std::endl;

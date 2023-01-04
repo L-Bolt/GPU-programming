@@ -13,7 +13,7 @@ int main() {
     std::unique_ptr<Gpu> gpu = std::make_unique<Gpu>(std::vector<std::string>{"../src/kernels/test.cl"});
     CNN cnn(input_dim, kernel_dim, pool_size, 30, 10);
 
-    cnn.train(dataset->training_set, dataset->labels, 0.01, 30);
+    cnn.train(dataset->training_set, dataset->labels, 0.01, 3);
 
     if (gpu->gpu_enabled()) {
         gpu->test();
