@@ -26,10 +26,12 @@ class Dataset {
         void write_images_to_disk();
         Image &get_image(int index);
 
+        std::vector<Image> training_set;
+        std::vector<std::vector<double>> labels;
+
     private:
         std::vector<std::vector<uint8_t>> buffer;
         std::vector<Image> image_buffer;
-        std::vector<Image> training_set;
         std::vector<Image> test_set;
 
         std::string files[CIFAR_FILES] = {

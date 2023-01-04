@@ -41,9 +41,9 @@ class Matrix2D {
         template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
         template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
 
-        template<typename T2> friend Matrix2D<T2> operator+(Matrix2D<T2> &m1, T2 &scalar);
-        template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, T2 &scalar);
-        template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, T2 &scalar);
+        template<typename T2> friend Matrix2D<T2> operator+(Matrix2D<T2> &m1, T2 scalar);
+        template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, T2 scalar);
+        template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, T2 scalar);
 
     private:
         int rows;
@@ -91,7 +91,7 @@ class Matrix3D {
         int rows;
         int columns;
         int channels;
-        std::vector<T> *array;
+        std::vector<T> array;
 
         bool dynamic = false;
         int offset = 0;
@@ -131,15 +131,14 @@ Matrix2D<T>::Matrix2D(std::vector<T> &v1, std::vector<T> &v2, int slice) {
     this->rows = (int) v1.size();
     this->columns = (int) v2.size() - slice;
 
-    std::vector<T> data(this->rows * this->columns);
-
     for (int i = 0; i < this->rows; i++){
         for (int j = 0; j< this->columns; j++){
-            data.at(i * this->rows + j) = v1.at(i) * v2.at(j);
+            // this->array.at(i * this->rows + j) = v1.at(i) * v2.at(j);
+            this->array.push_back(v1.at(i) * v2.at(j));
         }
     }
 
-    this->array = data;
+    // this->array = data;
 }
 
 template<typename T>
@@ -302,18 +301,16 @@ void Matrix2D<T>::reshape(int rows, int columns) {
 
 template<typename T>
 std::vector<T> Matrix2D<T>::dot(std::vector<T> &v, int slice) {
-    assert(this->columns == (int) v.size() - slice);
-
-    std::vector<T> res(this->rows * (this->columns - slice));
-    for (int i = 0; i < this->rows; i++){
-        T w = 0;
-        for (int j = 0; j < this->columns - slice; j++){
-            w += (this->get(i, j) * v.at(j));
-        }
-        res.at(i) = w;
-    }
-
-    return res;
+		assert(this->columns == (int) v.size() - slice);
+		std::vector<double> vr;
+		for (int i=0; i < this->rows; i++){
+			double w = 0;
+			for( int j=0; j < this->columns - slice; j++){
+				w += (this->get(i,j) * v.at(j));
+			}
+			vr.push_back(w);
+		}
+		return vr;
 }
 
 /**
@@ -338,7 +335,7 @@ Matrix2D<T> operator+(Matrix2D<T>& m1, Matrix2D<T>& m2) {
  * Adds scalar to every index in m1.
  */
 template<typename T>
-Matrix2D<T> operator+(Matrix2D<T>& m1, T &scalar) {
+Matrix2D<T> operator+(Matrix2D<T>& m1, T scalar) {
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) + scalar;
@@ -371,15 +368,16 @@ Matrix2D<T> operator-(Matrix2D<T>& m1, Matrix2D<T>& m2) {
  * Subtracts scalar to every index in m1.
  */
 template<typename T>
-Matrix2D<T> operator-(Matrix2D<T>& m1, T &scalar) {
+Matrix2D<T> operator-(Matrix2D<T>& m1, T scalar) {
+    Matrix2D<T> min(m1.rows, m1.columns);
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) - scalar;
-            m1.set(i, j, new_value);
+            min.set(i, j, new_value);
         }
     }
 
-    return m1;
+    return min;
 }
 
 /**
@@ -407,15 +405,16 @@ Matrix2D<T> operator*(Matrix2D<T>& m1, Matrix2D<T>& m2) {
  * Multiplies every index of m1 by scalar.
  */
 template<typename T>
-Matrix2D<T> operator*(Matrix2D<T>& m1, T &scalar) {
+Matrix2D<T> operator*(Matrix2D<T>& m1, T scalar) {
+    Matrix2D<T> mult(m1.rows, m1.columns);
     for (int i = 0; i < m1.rows; i++) {
         for (int j = 0; j < m1.columns; j++) {
             int new_value = m1.get(i, j) * scalar;
-            m1.set(i, j, new_value);
+            mult.set(i, j, new_value);
         }
     }
 
-    return m1;
+    return mult;
 }
 
 /**
@@ -454,8 +453,7 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels, std::vector<T2> *data
     this->columns = columns;
     this->channels = channels;
 
-    this->array = new std::vector<T>(data->begin(), data->end());
-    this->dynamic = true;
+    this->array = std::vector<T>(data->begin(), data->end());
 
     this->offset = data->size() % (rows * columns * channels);
 }
@@ -466,7 +464,7 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels, std::vector<T> *data)
     this->columns = columns;
     this->channels = channels;
 
-    this->array = data;
+    this->array = *(data);
 
     this->offset = data->size() % (rows * columns * channels);
 }
@@ -479,13 +477,13 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels, bool init) {
     this->dynamic = true;
     this->offset = 0;
 
-    this->array = new std::vector<T>((rows * columns * channels));
+    this->array = std::vector<T>((rows * columns * channels));
 
     if (init) {
         std::uniform_real_distribution<double> unif(-1, 1);
-        for (size_t i = 0; i < this->array->size(); i++) {
+        for (size_t i = 0; i < this->array.size(); i++) {
             double a = unif(random_engine);
-            this->array->at(i) = a;
+            this->array.at(i) = a;
         }
     }
 }
@@ -506,7 +504,7 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels, bool init) {
  */
 template<typename T>
 void Matrix3D<T>::set(int row, int column, int channel, T value) {
-    this->array->at(coordinate_to_index3D(row, column, channel)) = value;
+    this->array.at(coordinate_to_index3D(row, column, channel)) = value;
 }
 
 /**
@@ -514,7 +512,7 @@ void Matrix3D<T>::set(int row, int column, int channel, T value) {
  */
 template<typename T>
 T Matrix3D<T>::get(int row, int column, int channel) {
-    return this->array->at(coordinate_to_index3D(row, column, channel));
+    return this->array.at(coordinate_to_index3D(row, column, channel));
 }
 
 /**
@@ -605,7 +603,7 @@ Matrix2D<double> Matrix3D<T>::convolve(Matrix3D<double> &kernel, double bias) {
 
 template<typename T>
 Matrix2D<T> Matrix3D<T>::get_plane(int channel) {
-    assert(channel < this->channels && channel > 0);
+    assert(channel < this->channels && channel >= 0);
 
     Matrix2D<T> plane(this->rows, this->columns);
     for (int i = 0; i < this->rows; i++) {
@@ -765,12 +763,14 @@ void Matrix2D<T>::test_matrix2D() {
     std::vector<uint8_t> k = {5, 6, 7, 8};
     std::vector<uint8_t> c = {1, 2, 3, 4, 5, 6, 7, 8};
     std::vector<uint8_t> d = {1, 2, 3, 4, 5, 6, 7, 8};
+    // std::vector<uint8_t> dub = {1, 2, 3, 4, 5, 6, 7, 8};
 
     Matrix2D<uint8_t> matA(4, 1, a);
     Matrix2D<uint8_t> matB(4, 1, b);
     Matrix2D<uint8_t> matK(1, 4, k);
     Matrix2D<uint8_t> matC(4, 2, c);
     Matrix2D<uint8_t> matD(8, 1, d);
+    // Matrix2D<double> dubs(4, 2, d);
 
     std::cout << "resizing matrix" << std::endl;
     matC.print();
@@ -796,6 +796,9 @@ void Matrix2D<T>::test_matrix2D() {
     Matrix2D<uint8_t> mult = matA * matK;
     mult.print();
     std::cout << std::endl;
+    // std::cout << "testing multiplication with constant" << std::endl;
+    // dubs = dubs * 0.1;
+    // dubs.print();
 
     std::cout << "testing flatten" << std::endl;
     mult.flatten();

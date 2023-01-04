@@ -2,6 +2,7 @@
 
 
 double multiply(Matrix2D<double> & m1, Matrix2D<double> & m2, int xslice, int yslice);
+Matrix2D<double> multiply(Matrix2D<double> & m1, double value);
 
 
 
@@ -29,8 +30,9 @@ void CNN::train(std::vector<Image> &Xtrain,
 
 	for (int epoch = 1; epoch <= epochs; epoch++) {
 		double error = 0.0;
+		std::cout << "Running epoch: " << epoch << std::endl;
 		for (size_t it = 0; it < Xtrain.size(); it++) {
-			std::vector<Matrix2D<double>> conv_activations(2);
+			std::vector<Matrix2D<double>> conv_activations;
 			std::vector<std::vector<double>> activations(3);
 
 			forward_propagate(Xtrain[it], conv_activations, activations);
@@ -53,7 +55,7 @@ double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> 
 	unsigned int it = 1;
 	double error = 0;
 	while (it <= Xval.size()){
-		std::vector<Matrix2D<double>> conv_activations(2);
+		std::vector<Matrix2D<double>> conv_activations;
 		std::vector<std::vector<double>> activations(3);
 
 		forward_propagate(Xval[it], conv_activations, activations);
@@ -81,7 +83,7 @@ void CNN::forward_propagate(Image &input, std::vector<Matrix2D<double>> &conv_ac
 
 	std::vector<double> flattened_pool = pooled.flatten_to_vector(1);
 	//	append 1s to inputs and to output of every layer (for bias)
-	flattened_pool[flattened_pool.size()] = 1;
+	flattened_pool[flattened_pool.size() - 1] = 1;
 
 	for (int i = 0; i < pooled.get_rows(); i++) {
 		for (int j = 0; j < pooled.get_columns(); j++) {
@@ -98,15 +100,15 @@ void CNN::forward_propagate(Image &input, std::vector<Matrix2D<double>> &conv_ac
 	hidden = np::applyFunction(hidden, fns::relu);
 	hidden.push_back(1);
 
-	activations[0] = flattened_pool;
+	activations.at(0) = flattened_pool;
 	// output layer
 	Matrix2D<double> W1 = weights[1].transpose();
 	std::vector<double> output = W1.dot(hidden);
 	output = np::applyFunction(output, fns::softmax);
 	output = np::normalize(output);
 
-	activations[1] = std::move(hidden);
-	activations[2] = std::move(output);
+	activations.at(1) = hidden;
+	activations.at(2) = output;
 }
 
 /*
@@ -146,13 +148,14 @@ void CNN::back_propagate(std::vector<double> &delta_L, std::vector<Matrix2D<doub
 	Matrix2D<double> dW0(activations[0], delta_h, 1);
 		// last column has to be sliced off
 	Matrix2D<double> dW1(activations[1], delta_L);
-	dW0 * learning_rate;
-	dW1 * learning_rate;
 
-	weights[0] - dW0;
-	weights[1] - dW1;
+	dW0 = multiply(dW0,(learning_rate));
+	dW1 = multiply(dW1,(learning_rate));
 
-	// TODO update kernel voor 3d image.
+	weights[0] = weights[0] - dW0;
+	weights[1] = weights[1] - dW1;
+
+	//TODO update kernel voor 3d image.
 	for (int i = 0; i < kernel.get_rows(); i++){
 		for (int j = 0; j < kernel.get_columns(); j++){
 			for (int k = 0; k < 3; k++) {
@@ -190,4 +193,26 @@ double multiply(Matrix2D<double> & m1, Matrix2D<double> & m2, int xslice, int ys
 		}
 	}
 	return accumulator;
+}
+
+Matrix2D<double> multiply(Matrix2D<double> & m1, double value){
+	Matrix2D<double> m3(m1.get_rows(), m1.get_columns(), false);
+	for(int i=0; i < m1.get_rows(); i++){
+		for( int j=0; j < m1.get_columns(); j++){
+			m3.set(i,j,m1.get(i,j) * value);
+		}
+	}
+	return m3;
+}
+
+Matrix2D<double> subtract(Matrix2D<double> & m1, Matrix2D<double> & m2){
+	assert(m1.get_rows() == m2.get_rows() && m1.get_columns() == m2.get_columns());
+
+	Matrix2D<double> m3(m1.get_rows(), m1.get_columns(), true);
+	for( int i=0; i < m1.get_rows(); i++){
+		for( int j=0; j < m1.get_columns(); j++){
+			m3.set(i,j,m1.get(i,j) - m2.get(i,j));
+		}
+	}
+	return m3;
 }
