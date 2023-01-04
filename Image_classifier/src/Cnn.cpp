@@ -52,16 +52,13 @@ double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> 
 	 *	each iteration
 	*/
 	assert(Xval.size() == Yval.size());
-	unsigned int it = 1;
 	double error = 0;
-	while (it <= Xval.size()){
+	for (size_t it = 0; it < Xval.size(); it++) {
 		std::vector<Matrix2D<double>> conv_activations;
 		std::vector<std::vector<double>> activations(3);
 
 		forward_propagate(Xval[it], conv_activations, activations);
 		error += cross_entropy(activations.back(), Yval[it]);
-
-		it += 1;
 	}
 	std::cout << " error: " << (error / Xval.size()) << std::endl;
 

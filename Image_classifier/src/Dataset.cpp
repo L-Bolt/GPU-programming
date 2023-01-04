@@ -32,6 +32,12 @@ Dataset::Dataset(std::string path) {
         label[img.get_class()] = 1.0;
         this->labels.push_back(label);
     }
+
+    for (Image &img : this->test_set) {
+        std::vector<double> test_label(CIFAR_CLASSES, 0);
+        test_label[img.get_class()] = 1.0;
+        this->test_labels.push_back(test_label);
+    }
 }
 
 /**

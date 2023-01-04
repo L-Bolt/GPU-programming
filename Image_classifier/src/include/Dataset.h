@@ -27,12 +27,13 @@ class Dataset {
         Image &get_image(int index);
 
         std::vector<Image> training_set;
+        std::vector<Image> test_set;
         std::vector<std::vector<double>> labels;
+        std::vector<std::vector<double>> test_labels;
 
     private:
         std::vector<std::vector<uint8_t>> buffer;
         std::vector<Image> image_buffer;
-        std::vector<Image> test_set;
 
         std::string files[CIFAR_FILES] = {
             "data_batch_1.bin",
