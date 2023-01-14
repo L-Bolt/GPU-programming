@@ -23,7 +23,7 @@ class Matrix2D {
 
         T get(int row, int column);
         void set(int row, int column, T value);
-        void print(double floating_point=false);
+        void print(bool floating_point=false);
         void reshape(int rows, int columns);
         Matrix2D<T> transpose();
         Matrix2D<double> normalize(double mean, double stdev);
@@ -59,7 +59,7 @@ class Matrix2D {
 template<typename T>
 class Matrix3D {
     public:
-        Matrix3D(): rows{0}, columns{0}, channels{0}, array{NULL} {};
+        Matrix3D(): rows{0}, columns{0}, channels{0} {};
         Matrix3D(int rows, int columns, int channels, bool init=false);
         Matrix3D(int rows, int columns, int channels, std::vector<T> *data);
         template<typename T2>
@@ -72,7 +72,7 @@ class Matrix3D {
 
         T get(int row, int column, int channel);
         void set(int row, int column, int channel, T value);
-        void print(double floating_point=false);
+        void print(bool floating_point=false);
         Matrix3D<double> normalize(double mean, double stdev);
         Matrix3D<double> normalize();
         Matrix2D<double> convolve(Matrix3D<double> &kernel, double bias=1);
@@ -421,7 +421,7 @@ Matrix2D<T> operator*(Matrix2D<T>& m1, T scalar) {
  * Prints the matrix.
  */
 template<typename T>
-void Matrix2D<T>::print(double floating_point) {
+void Matrix2D<T>::print(bool floating_point) {
     int cols = this->columns;
     if (!floating_point) {
         for (long unsigned int i = 0; i < this->array.size(); i++) {
@@ -607,7 +607,7 @@ Matrix2D<T> Matrix3D<T>::get_plane(int channel) {
 
     Matrix2D<T> plane(this->rows, this->columns);
     for (int i = 0; i < this->rows; i++) {
-        for (int j = 0; j < this->channels; j++) {
+        for (int j = 0; j < this->columns; j++) {
             plane.set(i, j, this->get(i, j, channel));
         }
     }
@@ -619,7 +619,7 @@ Matrix2D<T> Matrix3D<T>::get_plane(int channel) {
  * Prints the matrix.
  */
 template<typename T>
-void Matrix3D<T>::print(double floating_point) {
+void Matrix3D<T>::print(bool floating_point) {
     for(int i = 0; i < rows; i++) {
 		for(int j = 0; j < columns; j++) {
             for (int k = 0; k < channels; k++) {

@@ -62,19 +62,20 @@ std::vector<std::vector<uint8_t>> util::split_vector(std::vector<uint8_t> &vec, 
 
 // apply a function to every element of the vector
 std::vector<double> np::applyFunction(std::vector<double> &v, double (*active_fn)(double)){
-    std::vector<double> vr;
-    for(unsigned int i=0; i < v.size(); i++){
-        if (!std::isnan(v.at(i))){
+    std::vector<double> vr(v.size());
+
+    for (size_t i = 0; i < v.size(); i++) {
+        if (!std::isnan(v.at(i))) {
             double ret = (*active_fn)(v.at(i));
-            if (std::isnan(ret))	{
-                vr.push_back(0);
+            if (std::isnan(ret)) {
+                vr.at(i) = 0;
             }
             else {
-                vr.push_back(ret);
+                vr.at(i) = ret;
             }
         }
         else {
-            vr.push_back(0);
+            vr.at(i) = 0.0;
         }
     }
 

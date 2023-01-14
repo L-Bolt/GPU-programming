@@ -13,3 +13,7 @@ __kernel void helloWorld(__global char* data) {
     data[11] = '!';
     data[12] = '\n';
 }
+
+// __kernel void convolve(__global double* array) {
+
+// }

@@ -168,13 +168,11 @@ void CNN::back_propagate(std::vector<double> &delta_L, std::vector<Matrix2D<doub
  */
 double CNN::cross_entropy(std::vector<double> &ypred, std::vector<double> &ytrue) {
 	assert(ypred.size() == ytrue.size());
+
 	std::vector<double> z = np::applyFunction(ypred, log);
-
-	for (size_t i = 0; i < z.size(); i++) {
-        z.at(i) = z.at(i) * ytrue.at(i);
-    }
-
+	z = np::multiply(z, ytrue);
 	double error = std::reduce(z.begin(), z.end());
+	std::cout << error << std::endl;
 
 	return (-error);
 }
