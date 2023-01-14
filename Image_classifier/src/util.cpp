@@ -6,7 +6,7 @@ std::default_random_engine random_engine(seed);
 
 double fns::relu(double x){
     if (x > 0) return x;
-    else return (double) 0;
+    else return (double) 0.0;
 }
 
 double fns::sigmoid(double x){

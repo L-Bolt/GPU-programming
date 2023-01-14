@@ -37,6 +37,8 @@ class Matrix2D {
         std::vector<T> flatten_to_vector(int extra = 1);
         static void test_matrix2D();
 
+        Matrix2D<T> subtract(Matrix2D<T> & m2);
+
         template<typename T2> friend Matrix2D<T2> operator+(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
         template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
         template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, Matrix2D<T2> &m2);
@@ -344,6 +346,19 @@ Matrix2D<T> operator+(Matrix2D<T>& m1, T scalar) {
     }
 
     return m1;
+}
+
+template<typename T>
+Matrix2D<T> Matrix2D<T>::subtract(Matrix2D<T> & m2){
+    assert(this->get_rows() == m2.get_rows() && this->get_columns() == m2.get_columns());
+
+    Matrix2D<T> m3(this->get_rows(), this->get_columns(), false);
+    for (int i = 0; i < this->get_rows(); i++){
+        for (int j = 0; j < this->get_columns(); j++){
+            m3.set(i, j, this->get(i, j) - m2.get(i, j));
+        }
+    }
+    return m3;
 }
 
 /**

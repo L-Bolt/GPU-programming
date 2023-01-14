@@ -13,7 +13,7 @@ int main() {
     std::unique_ptr<Gpu> gpu = std::make_unique<Gpu>(std::vector<std::string>{"../src/kernels/test.cl"});
     CNN cnn(input_dim, kernel_dim, pool_size, 40, 10);
 
-    cnn.train(dataset->training_set, dataset->labels, 0.05, 3);
+    cnn.train(dataset->training_set, dataset->labels, 0.05, 1);
     std::cout << "validating: " << std::endl;
     cnn.validate(dataset->test_set, dataset->test_labels);
 

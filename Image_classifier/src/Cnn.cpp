@@ -36,21 +36,24 @@ void CNN::train(std::vector<Image> &Xtrain,
 			std::vector<std::vector<double>> activations(3);
 
 			forward_propagate(Xtrain[it], conv_activations, activations);
-			error += cross_entropy(activations.back(), Ytrain[it]);
+			// for (size_t i = 0; i < activations[2].size(); i++) {
+			// 	std::cout << "activation[i]: " << activations[2][i] << '\n';
+			// }
+			// std::cout << std::endl;
 
+			error += cross_entropy(activations[2], Ytrain[it]);
 			std::vector<double> delta_L = np::subtract(activations.back(), Ytrain[it]);
-
 			back_propagate(delta_L, conv_activations, activations, Xtrain[it], fns::relu_gradient, learning_rate);
 		}
 		std::cout << "epoch: " << epoch << " error: " << (error / Xtrain.size()) << std::endl ;
 	}
 }
 
+/*	Calculate the Validation error over the validation set.
+ *	So only do forward_propagate for each batch without updating weights
+ *	each iteration
+ */
 double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> &Yval) {
-	/*	Calculate the Validation error over the validation set.
-	 *	So only do forward_propagate for each batch without updating weights
-	 *	each iteration
-	*/
 	assert(Xval.size() == Yval.size());
 	double error = 0;
 	for (size_t it = 0; it < Xval.size(); it++) {
@@ -58,7 +61,7 @@ double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> 
 		std::vector<std::vector<double>> activations(3);
 
 		forward_propagate(Xval[it], conv_activations, activations);
-		error += cross_entropy(activations.back(), Yval[it]);
+		error += cross_entropy(activations[2], Yval[it]);
 	}
 	std::cout << " error: " << (error / Xval.size()) << std::endl;
 
@@ -149,8 +152,8 @@ void CNN::back_propagate(std::vector<double> &delta_L, std::vector<Matrix2D<doub
 	dW0 = multiply(dW0,(learning_rate));
 	dW1 = multiply(dW1,(learning_rate));
 
-	weights[0] = weights[0] - dW0;
-	weights[1] = weights[1] - dW1;
+	weights[0] = weights[0].subtract(dW0);
+	weights[1] = weights[1].subtract(dW1);
 
 	//TODO update kernel voor 3d image.
 	for (int i = 0; i < kernel.get_rows(); i++){
@@ -172,7 +175,6 @@ double CNN::cross_entropy(std::vector<double> &ypred, std::vector<double> &ytrue
 	std::vector<double> z = np::applyFunction(ypred, log);
 	z = np::multiply(z, ytrue);
 	double error = std::reduce(z.begin(), z.end());
-	std::cout << error << std::endl;
 
 	return (-error);
 }
