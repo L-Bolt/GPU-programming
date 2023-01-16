@@ -1,4 +1,5 @@
 #include "include/Gpu.h"
+#include "include/Cnn.h"
 
 
 Gpu::Gpu(std::vector<std::string> source_paths) {
@@ -19,18 +20,29 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-void Gpu::test() {
+void Gpu::test(Image input) {
+    Matrix3D<double> output = Matrix3D<double>(input.matrix.get_rows(), input.matrix.get_columns(), input.matrix.get_channels());
     build_program();
-    char buf[16];
-    cl::Buffer memBuf(context, CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY, sizeof(buf));
-    cl::Kernel kernel(program, "helloWorld", nullptr);
-    kernel.setArg(0, memBuf);
+    cl::Buffer memBuf(context, CL_MEM_READ_WRITE, sizeof(input));
+    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE, sizeof(output));
+    cl::Kernel kernel(program, "proc", nullptr);
     cl::CommandQueue queue(context, device);
+    queue.enqueueWriteBuffer(memBuf, CL_TRUE, 0, sizeof(memBuf), &input, NULL, NULL);
+    kernel.setArg(0, memBuf);
+    kernel.setArg(1, memBuf2);
+    kernel.setArg(2, input.matrix.get_rows());
+    kernel.setArg(3, input.matrix.get_columns());
+    kernel.setArg(4, input.matrix.get_channels());
     queue.enqueueTask(kernel);
-    queue.enqueueReadBuffer(memBuf, CL_TRUE, 0, sizeof(buf), buf);
+    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(memBuf2), &output);
     std::cout << "Message from GPU: " << std::endl;
-    std::cout << buf << std::endl;
+    std::cout << output.get(2, 8, 2) << std::endl;
 }
+
+// void Gpu::convolve(int input_channels, int input_size, int pad, int stride, int start_channel, int output_size, std::vector<Image> &input_im, std::vector<double> output_im) {
+//     build_program();
+
+// }
 
 cl::Context Gpu::make_context() {
     cl::Context context(this->device);
