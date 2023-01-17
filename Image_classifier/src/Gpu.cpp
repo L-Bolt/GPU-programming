@@ -1,4 +1,5 @@
 #include "include/Gpu.h"
+#include "include/Cnn.h"
 
 
 Gpu::Gpu(std::vector<std::string> source_paths) {
@@ -19,18 +20,28 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-void Gpu::test() {
+void Gpu::normalize(Matrix3D<unsigned char> input) {
+    std::cout << (double) input.array.data()[1233] << std::endl;
+    Matrix3D<double> output = Matrix3D<double>(input.get_rows(), input.get_columns(), input.get_channels());
     build_program();
-    char buf[16];
-    cl::Buffer memBuf(context, CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY, sizeof(buf));
-    cl::Kernel kernel(program, "helloWorld", nullptr);
-    kernel.setArg(0, memBuf);
+    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * 3073, input.array.data());
+    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * 3073, output.array.data());
+    cl::Kernel kernel(program, "proc", nullptr);
     cl::CommandQueue queue(context, device);
-    queue.enqueueTask(kernel);
-    queue.enqueueReadBuffer(memBuf, CL_TRUE, 0, sizeof(buf), buf);
+    kernel.setArg(0, memBuf);
+    kernel.setArg(1, memBuf2);
+    kernel.setArg(2, input.get_rows());
+    kernel.setArg(3, input.get_columns());
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(input.get_rows(), input.get_columns(), input.get_channels()));
+    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * 3073, output.array.data());
     std::cout << "Message from GPU: " << std::endl;
-    std::cout << buf << std::endl;
+    output.print(true);
 }
+
+// void Gpu::convolve(int input_channels, int input_size, int pad, int stride, int start_channel, int output_size, std::vector<Image> &input_im, std::vector<double> output_im) {
+//     build_program();
+
+// }
 
 cl::Context Gpu::make_context() {
     cl::Context context(this->device);

@@ -22,9 +22,9 @@ class Image {
 
         Matrix3D<double> normalize() {return matrix.normalize();};
         int get_size() const {return CIFAR_IMAGE_SIZE;};
+        Matrix3D<uint8_t> matrix;
 
     private:
-        Matrix3D<uint8_t> matrix;
         uint8_t classifier;
 
         cv::Mat array_to_cv_mat();
