@@ -21,6 +21,7 @@ class Image {
         short get_class();
 
         Matrix3D<double> normalize() {return matrix.normalize();};
+        Matrix3D<double> normalize(double mean, double stdev) {return matrix.normalize(mean, stdev);};
         int get_size() const {return CIFAR_IMAGE_SIZE;};
 
     private:
