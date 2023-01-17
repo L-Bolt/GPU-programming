@@ -20,8 +20,7 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-void Gpu::normalize(Matrix3D<unsigned char> input) {
-    std::cout << (double) input.array.data()[1233] << std::endl;
+Matrix3D<double> Gpu::normalize(Matrix3D<unsigned char> input) {
     Matrix3D<double> output = Matrix3D<double>(input.get_rows(), input.get_columns(), input.get_channels());
     build_program();
     cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * 3073, input.array.data());
@@ -35,7 +34,7 @@ void Gpu::normalize(Matrix3D<unsigned char> input) {
     queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(input.get_rows(), input.get_columns(), input.get_channels()));
     queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * 3073, output.array.data());
     std::cout << "Message from GPU: " << std::endl;
-    output.print(true);
+    return output;
 }
 
 // void Gpu::convolve(int input_channels, int input_size, int pad, int stride, int start_channel, int output_size, std::vector<Image> &input_im, std::vector<double> output_im) {
