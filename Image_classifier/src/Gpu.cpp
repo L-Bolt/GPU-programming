@@ -20,23 +20,22 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-void Gpu::test(Image input) {
-    Matrix3D<double> output = Matrix3D<double>(input.matrix.get_rows(), input.matrix.get_columns(), input.matrix.get_channels());
+void Gpu::normalize(Matrix3D<unsigned char> input) {
+    std::cout << (double) input.array.data()[1233] << std::endl;
+    Matrix3D<double> output = Matrix3D<double>(input.get_rows(), input.get_columns(), input.get_channels());
     build_program();
-    cl::Buffer memBuf(context, CL_MEM_READ_WRITE, sizeof(input));
-    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE, sizeof(output));
+    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * 3073, input.array.data());
+    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * 3073, output.array.data());
     cl::Kernel kernel(program, "proc", nullptr);
     cl::CommandQueue queue(context, device);
-    queue.enqueueWriteBuffer(memBuf, CL_TRUE, 0, sizeof(memBuf), &input, NULL, NULL);
     kernel.setArg(0, memBuf);
     kernel.setArg(1, memBuf2);
-    kernel.setArg(2, input.matrix.get_rows());
-    kernel.setArg(3, input.matrix.get_columns());
-    kernel.setArg(4, input.matrix.get_channels());
-    queue.enqueueTask(kernel);
-    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(memBuf2), &output);
+    kernel.setArg(2, input.get_rows());
+    kernel.setArg(3, input.get_columns());
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(input.get_rows(), input.get_columns(), input.get_channels()));
+    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * 3073, output.array.data());
     std::cout << "Message from GPU: " << std::endl;
-    std::cout << output.get(2, 8, 2) << std::endl;
+    output.print(true);
 }
 
 // void Gpu::convolve(int input_channels, int input_size, int pad, int stride, int start_channel, int output_size, std::vector<Image> &input_im, std::vector<double> output_im) {

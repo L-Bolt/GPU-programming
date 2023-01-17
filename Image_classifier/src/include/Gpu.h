@@ -15,8 +15,7 @@ class Gpu {
 
         bool build_program();
         bool gpu_enabled() const {return enabled;};
-        void test(Image);
-        // void convolve();
+        void normalize(Matrix3D<unsigned char>);
 
     private:
         std::vector<std::string> source_paths;

@@ -15,19 +15,15 @@ __kernel void helloWorld(__global char* data) {
 }
 
 __kernel void proc(
-    __global double* restrict image, 
+    __global unsigned char* restrict image,
     __global double* restrict output,
     const int rows,
-    const int cols,
-    const int channels) { 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            for (int k = 0; k < channels; k++) {
-                double value = (image[(k * rows * cols) + (i * rows) + j] / 255);
-                output[(k * rows * cols) + (i * rows) + j] = value;
-            }
-        }
-    }
+    const int cols) { 
+    int i = get_global_id(0);
+    int j = get_global_id(1);
+    int k = get_global_id(2);
+    double value = ((double) image[(k * rows * cols) + (i * rows) + j] / (double) 255);
+    output[(k * rows * cols) + (i * rows) + j] = value;
 }
 
 // __kernel void convolve(
