@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <OpenCL/OpenCL.hpp>
+#include <include/Image.h>
 
 class Gpu {
     public:
@@ -14,7 +15,8 @@ class Gpu {
 
         bool build_program();
         bool gpu_enabled() const {return enabled;};
-        void test();
+        Matrix3D<double> normalize(Matrix3D<unsigned char> input);
+        Matrix2D<double> convolute(Matrix3D<double> input, Matrix3D<double> conv_kernel, double bias);
 
     private:
         std::vector<std::string> source_paths;

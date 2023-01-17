@@ -47,11 +47,11 @@ class Matrix2D {
         template<typename T2> friend Matrix2D<T2> operator+(Matrix2D<T2> &m1, T2 scalar);
         template<typename T2> friend Matrix2D<T2> operator-(Matrix2D<T2> &m1, T2 scalar);
         template<typename T2> friend Matrix2D<T2> operator*(Matrix2D<T2> &m1, T2 scalar);
+        std::vector<T> array;
 
     private:
         int rows;
         int columns;
-        std::vector<T> array;
 
         bool dynamic = false;
 
@@ -89,12 +89,13 @@ class Matrix3D {
         template<typename T2> friend Matrix3D<T2> operator+(Matrix3D<T2> &m1, T2 &scalar);
         template<typename T2> friend Matrix3D<T2> operator-(Matrix3D<T2> &m1, T2 &scalar);
         template<typename T2> friend Matrix3D<T2> operator*(Matrix3D<T2> &m1, T2 &scalar);
+        std::vector<T> array;
+
 
     private:
         int rows;
         int columns;
         int channels;
-        std::vector<T> array;
 
         bool dynamic = false;
         int offset = 0;
