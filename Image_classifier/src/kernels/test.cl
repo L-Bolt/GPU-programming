@@ -14,16 +14,38 @@ __kernel void helloWorld(__global char* data) {
     data[12] = '\n';
 }
 
-__kernel void proc(
+__kernel void normalization(
     __global unsigned char* restrict image,
     __global double* restrict output,
     const int rows,
     const int cols) { 
+    int id = (get_global_id(2) * get_global_size(0) * get_global_size(1)) + (get_global_id(0) * get_global_size(0)) + get_global_id(1);
+    double value = ((double) image[id+1] / (double) 255);
+    output[id] = value;
+}
+
+__kernel void convolve(
+    __global double* restrict image,
+    __global double* restrict _kernel,
+    __global double* restrict output,
+    const int ker_rows,
+    const int ker_cols,
+    const int im_rows,
+    const int im_cols,
+    const int im_channels,
+    const int out_cols,
+    const double bias) {
     int i = get_global_id(0);
     int j = get_global_id(1);
-    int k = get_global_id(2);
-    double value = ((double) image[(k * rows * cols) + (i * rows) + j] / (double) 255);
-    output[(k * rows * cols) + (i * rows) + j] = value;
+    double value = 0.0;
+    for (int h = i; h < i + ker_rows; h++) {
+        for (int w = j; w < j + ker_cols; w++) {
+            for (int channel = 0; channel < im_channels; channel++) {
+                value += _kernel[(channel * ker_rows * ker_cols) + ((h - i) * ker_rows) + (w - j)] * image[(channel * im_rows * im_cols) + (h * im_rows) + w];
+            }
+        }
+    }
+    output[i * out_cols + j] = value + bias;
 }
 
 // __kernel void convolve(
