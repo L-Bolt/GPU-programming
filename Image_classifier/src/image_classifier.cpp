@@ -16,7 +16,10 @@ int main() {
     std::unique_ptr<Gpu> gpu = std::make_unique<Gpu>(std::vector<std::string>{"../src/kernels/test.cl"});
     CNN cnn(input_dim, kernel_dim, pool_size, 196, 10);
     Gui gui("Image Classifier");
-    gui.run();
+
+    if (gui.is_enabled()) {
+        gui.run();
+    }
 
 
     // cnn.train(dataset->training_set, dataset->labels, 0.001, 12);
