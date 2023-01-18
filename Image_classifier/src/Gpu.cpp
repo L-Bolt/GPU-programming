@@ -1,7 +1,6 @@
 #include "include/Gpu.h"
 #include "include/Cnn.h"
 
-
 Gpu::Gpu(std::vector<std::string> source_paths) {
     this->source_paths = source_paths;
 
@@ -20,22 +19,31 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-Matrix3D<double> Gpu::normalize(Matrix3D<unsigned char> input) {
-    Matrix3D<double> output = Matrix3D<double>(input.get_rows(), input.get_columns(), input.get_channels());
+std::vector<std::vector<double>> Gpu::normalize(std::vector<Image> images) {
+    std::vector<std::vector<unsigned char>> input((int) images.size(), Matrix3D<unsigned char>(images[0].matrix.get_rows(), images[0].matrix.get_columns(), images[0].matrix.get_channels()).array);
+    std::vector<std::vector<double>> output((int) images.size(), Matrix3D<double>(images[0].matrix.get_rows(), images[0].matrix.get_columns(), images[0].matrix.get_channels()).array);
+    // std::cout << images[0].matrix.array.size() << std::endl;
+    for (int i = 0; i < images.size(); i++) {
+        for (int j = 0; j < images[0].matrix.array.size(); j++) {
+            input[i][j] = images[i].matrix.array.data()[j];
+        }
+    }
     build_program();
-    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * input.array.size(), input.array.data());
-    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.array.size(), output.array.data());
+    // std::cout << input.size() + input[0].size() << std::endl;
+    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * input.size() * input[0].size(), input.data());
+    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(output.data()), output.data());
     cl::Kernel kernel(program, "normalization", nullptr);
     cl::CommandQueue queue(context, device);
-
     // TODO kan kernel arguments setten misschien met een functie?
     // die een vector van void pointers binnen krijgt waar alles in zit
+    // Wat is het praktisch nut daarvan dan? De functie is nu prima gebruiksvriendelijk,
+    // je hoeft alleen de image mee te geven.
     kernel.setArg(0, memBuf);
     kernel.setArg(1, memBuf2);
-    kernel.setArg(2, input.get_rows());
-    kernel.setArg(3, input.get_columns());
-    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(32, 32, 3));
-    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * output.array.size(), output.array.data());
+    kernel.setArg(2, images[0].matrix.get_rows());
+    kernel.setArg(3, images[0].matrix.get_columns());
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(images[0].matrix.get_rows(), images[0].matrix.get_columns(), images[0].matrix.get_channels()));
+    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(output.data()), output.data());
     std::cout << "Message from GPU: " << std::endl;
 
     return output;

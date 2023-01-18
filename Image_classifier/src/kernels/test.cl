@@ -14,14 +14,16 @@ __kernel void helloWorld(__global char* data) {
     data[12] = '\n';
 }
 
-__kernel void normalization(__global unsigned char* restrict image,
-                            __global double* restrict output,
+__kernel void normalization(__global unsigned char (* restrict images)[50000],
+                            __global double (* restrict output)[50000],
                             const int rows,
-                            const int cols) {
-
-    int id = (get_global_id(2) * get_global_size(0) * get_global_size(1)) + (get_global_id(0) * get_global_size(0)) + get_global_id(1);
-    double value = ((double) image[id+1] / (double) 255);
-    output[id] = value;
+                            const int cols) {  
+    printf("%f\n", (double) images[0][0]);
+    for (int i = 0; i < 50000; i++) {
+        int id = (get_global_id(2) * get_global_size(0) * get_global_size(1)) + (get_global_id(0) * get_global_size(0)) + get_global_id(1);
+        double value = ((double) images[i][(id+1)] / (double) 255);
+        output[i][id] = value;
+    }
 }
 
 __kernel void convolve(__global double* restrict image,

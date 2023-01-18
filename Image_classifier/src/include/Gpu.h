@@ -15,7 +15,7 @@ class Gpu {
 
         bool build_program();
         bool gpu_enabled() const {return enabled;};
-        Matrix3D<double> normalize(Matrix3D<unsigned char> input);
+        std::vector<std::vector<double>> normalize(std::vector<Image> images);
         Matrix2D<double> convolute(Matrix3D<double> input, Matrix3D<double> conv_kernel, double bias);
 
     private:
