@@ -18,11 +18,11 @@ int main() {
     Gui gui("test");
 
 
-    cnn.train(dataset->training_set, dataset->labels, 0.001, 12);
-    std::cout << "validating: " << std::endl;
-    cnn.validate(dataset->test_set, dataset->test_labels);
+    // cnn.train(dataset->training_set, dataset->labels, 0.001, 12);
+    // std::cout << "validating: " << std::endl;
+    // cnn.validate(dataset->test_set, dataset->test_labels);
 
-    dataset->display_all_images();
+    // dataset->display_all_images();
 
     return 0;
 }

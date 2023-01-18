@@ -25,14 +25,19 @@
 class Gui {
     public:
         Gui(std::string window_name);
-        ~Gui() = default;
+        ~Gui();
 
-        bool running = true;
+        void run();
+        bool is_enabled() const {return enabled;};
 
     private:
-        void setup_window();
-        std::string window_name;
+        int setup();
+        void update();
 
+        std::string window_name;
+        bool enabled = true;
+        GLFWwindow* window;
+        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 };
 
 
