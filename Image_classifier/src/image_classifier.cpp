@@ -13,21 +13,11 @@ int main() {
 
     std::unique_ptr<Dataset> dataset = std::make_unique<Dataset>("../dataset/cifar-10-batches-bin");
     std::unique_ptr<Gpu> gpu = std::make_unique<Gpu>(std::vector<std::string>{"../src/kernels/test.cl"});
-    CNN cnn(input_dim, kernel_dim, pool_size, 40, 10);
+    CNN cnn(input_dim, kernel_dim, pool_size, 196, 10);
 
-    cnn.train(dataset->training_set, dataset->labels, 0.05, 1);
+    cnn.train(dataset->training_set, dataset->labels, 0.001, 12);
     std::cout << "validating: " << std::endl;
     cnn.validate(dataset->test_set, dataset->test_labels);
-    // Image hurb = dataset->training_set[0];
-
-    // if (gpu->gpu_enabled()) {
-    //     Matrix3D<double> test = gpu->normalize(hurb.matrix);
-    //     Matrix2D<double> pls = gpu->convolute(test, kernel, 1.0);
-    //     pls.print(true);
-    // }
-    // std::cout << "\n\n\n\n\n" << std::endl;
-    // Matrix2D<double> ver = hurb.normalize().convolve(kernel);
-    // ver.print(true);
 
     dataset->display_all_images();
 }

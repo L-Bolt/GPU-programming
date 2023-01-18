@@ -31,6 +31,7 @@ class Matrix2D {
         Matrix2D<double> applyFunction(double (*active_fn)(double));
         Matrix2D<double> max_pooling(Shape &pooling_window);
         std::vector<T> dot(std::vector<T> &v, int slice=0);
+        Matrix2D<T> dot(Matrix2D<T>& m2);
         T element_sum();
 
         void flatten() {rows = 1; columns = array.size();};
@@ -316,6 +317,27 @@ std::vector<T> Matrix2D<T>::dot(std::vector<T> &v, int slice) {
 		return vr;
 }
 
+
+template<typename T>
+Matrix2D<T> Matrix2D<T>::dot(Matrix2D<T>& m2) {
+    assert(this->rows == m2.columns || this->columns == m2.rows);
+    Matrix2D<T> mult(this->rows, m2.columns);
+
+    for (int i = 0; i < this->rows; ++i) {
+        for (int j = 0; j < m2.columns; ++j) {
+            T sum = 0;
+            for (int k = 0; k < this->columns; ++k) {
+                sum += this->get(i, k) * m2.get(k, j);
+            }
+            mult.set(i, j, sum);
+        }
+    }
+
+    return mult;
+}
+
+
+
 /**
  * Adds m2 to m1.
  */
@@ -496,7 +518,7 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels, bool init) {
     this->array = std::vector<T>((rows * columns * channels));
 
     if (init) {
-        std::uniform_real_distribution<double> unif(-1, 1);
+        std::uniform_real_distribution<double> unif(-0.5, 0.5);
         for (size_t i = 0; i < this->array.size(); i++) {
             double a = unif(random_engine);
             this->array.at(i) = a;

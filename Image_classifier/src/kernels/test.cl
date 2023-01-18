@@ -14,27 +14,27 @@ __kernel void helloWorld(__global char* data) {
     data[12] = '\n';
 }
 
-__kernel void normalization(
-    __global unsigned char* restrict image,
-    __global double* restrict output,
-    const int rows,
-    const int cols) { 
+__kernel void normalization(__global unsigned char* restrict image,
+                            __global double* restrict output,
+                            const int rows,
+                            const int cols) {
+
     int id = (get_global_id(2) * get_global_size(0) * get_global_size(1)) + (get_global_id(0) * get_global_size(0)) + get_global_id(1);
     double value = ((double) image[id+1] / (double) 255);
     output[id] = value;
 }
 
-__kernel void convolve(
-    __global double* restrict image,
-    __global double* restrict _kernel,
-    __global double* restrict output,
-    const int ker_rows,
-    const int ker_cols,
-    const int im_rows,
-    const int im_cols,
-    const int im_channels,
-    const int out_cols,
-    const double bias) {
+__kernel void convolve(__global double* restrict image,
+                       __global double* restrict _kernel,
+                       __global double* restrict output,
+                       const int ker_rows,
+                       const int ker_cols,
+                       const int im_rows,
+                       const int im_cols,
+                       const int im_channels,
+                       const int out_cols,
+                       const double bias) {
+
     int i = get_global_id(0);
     int j = get_global_id(1);
     double value = 0.0;
@@ -48,16 +48,15 @@ __kernel void convolve(
     output[i * out_cols + j] = value + bias;
 }
 
-// __kernel void convolve(
-//     const int input_channels, const int input_size,
-//     const int pad, const int stride,
-//     const int start_channel,
-//     const int output_size,
-//     __global double *restrict input_im,
-//     __global const float *restrict filter_weight,
-//     __global const float *restrict filter_bias,
-//     __global double *restrict output_im
-// ) {
+// __kernel void convolve(const int input_channels, const int input_size,
+//                          const int pad, const int stride,
+//                          const int start_channel,
+//                          const int output_size,
+//                          __global double *restrict input_im,
+//                          __global const float *restrict filter_weight,
+//                          __global const float *restrict filter_bias,
+//                          __global double *restrict output_im ) {
+
 //     int filter_index = get_global_id(0);
 
 //     filter_weight += filter_index * input_channels * 9;

@@ -16,17 +16,20 @@ class CNN {
         double validate(std::vector<Image> &Xval, std::vector<std::vector<double>> &Yval);
 
     private:
-        void forward_propagate(Image &input, std::vector<Matrix2D<double>> &conv_activations, std::vector<std::vector<double>> &activations);
-        void back_propagate(std::vector<double> &delta_L,
-                            std::vector<Matrix2D<double>> &conv_activations,
-                            std::vector<std::vector<double>> &activations,
+        void forward_propagate(Image &input, std::vector<std::vector<double>> &a, std::vector<std::vector<double>> &z);
+        void back_propagate(std::vector<double> &dZ2,
+                            std::vector<std::vector<double>> &a,
+                            std::vector<std::vector<double>> &z,
                             Image &input, double (*active_fn_der)(double), double learning_rate);
 
         double cross_entropy(std::vector<double> &ypred, std::vector<double> &ytrue);
 
         std::vector<Matrix2D<double>> weights;
+        std::vector<Matrix2D<double>> biases;
         Matrix3D<double> kernel;
         Shape pool_window;
+        int output_dim;
+        int hidden_layer_nodes;
 };
 
 #endif

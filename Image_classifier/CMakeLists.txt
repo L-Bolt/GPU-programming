@@ -42,7 +42,7 @@ elseif(UNIX AND NOT MACOSX)
   include_directories(${Boost_INCLUDE_DIR})
 elseif(MACOSX)
   message("OS: MacOS")
-  include_directories("/opt/homebrew/Cellar/boost/1.80.0/include")
+  include_directories("/opt/homebrew/Cellar/boost/1.81.0_1/include")
 endif()
 
 file(GLOB cnn_src CONFIGURE_DEPENDS "src/include/*.h" "src/*.cpp" "src/include/*.hpp")

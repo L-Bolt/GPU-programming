@@ -86,13 +86,18 @@ std::vector<double> np::normalize(std::vector<double> &v){
     std::vector<double> vr(v.size());
 
     double sum = 0;
-    for (size_t i = 0; i < v.size(); i++){
+    for (size_t i = 0; i < v.size(); i++) {
         sum += v.at(i);
     }
     assert(sum != 0);
 
-    for (size_t i = 0; i < v.size(); i++){
-        vr.at(i) = v.at(i) / sum;
+    for (size_t i = 0; i < v.size(); i++) {
+        if (sum == 0) {
+            vr.at(i) = 0.0;
+        }
+        else {
+            vr.at(i) = v.at(i) / sum;
+        }
     }
 
     return vr;
@@ -109,6 +114,14 @@ std::vector<double> np::multiply(std::vector<double> &v1, std::vector<double> &v
     return vr;
 }
 
+void np::multiply(std::vector<double> &v1, double val) {
+
+    for (size_t i = 0; i < v1.size(); i++){
+        v1.at(i) = v1.at(i) * val;
+    }
+
+}
+
 std::vector<double> np::subtract(std::vector<double> & v1, std::vector<double> & v2){
 	assert(v1.size() == v2.size());
 
@@ -118,4 +131,27 @@ std::vector<double> np::subtract(std::vector<double> & v1, std::vector<double> &
 	}
 
 	return vr;
+}
+
+double np::sum(std::vector<double> v1) {
+    double sum = 0.0;
+
+    for (size_t i = 0; i < v1.size(); i++) {
+        sum += v1.at(i);
+    }
+
+    return sum;
+}
+
+int np::get_max_class(std::vector<double> &prediction) {
+    double max = 0.0;
+    int index = 0;
+    for (size_t i = 0; i < prediction.size(); i++) {
+        if (prediction[i] > max) {
+            max = prediction[i];
+            index = i;
+        }
+    }
+
+    return index;
 }
