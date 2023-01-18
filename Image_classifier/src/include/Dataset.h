@@ -30,6 +30,9 @@ class Dataset {
         std::vector<Image> test_set;
         std::vector<std::vector<double>> labels;
         std::vector<std::vector<double>> test_labels;
+        std::vector<std::vector<uint8_t>> getBuffer() {
+            return buffer;
+        }
 
     private:
         std::vector<std::vector<uint8_t>> buffer;

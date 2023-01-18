@@ -1,7 +1,6 @@
 #include "include/Gpu.h"
 #include "include/Cnn.h"
 
-
 Gpu::Gpu(std::vector<std::string> source_paths) {
     this->source_paths = source_paths;
 
@@ -20,36 +19,38 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-Matrix3D<double> Gpu::normalize(Matrix3D<unsigned char> input) {
-    Matrix3D<double> output = Matrix3D<double>(input.get_rows(), input.get_columns(), input.get_channels());
+std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>> images) {
+    std::vector<double> output(images.size() * images[0].size());
+    std::vector<unsigned char> flattened;
+    for (auto const &v: images) {
+        flattened.insert(flattened.end(), v.begin(), v.end());
+    }
     build_program();
-    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * input.array.size(), input.array.data());
-    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.array.size(), output.array.data());
+    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * flattened.size(), flattened.data());
+    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.size(), output.data());
     cl::Kernel kernel(program, "normalization", nullptr);
     cl::CommandQueue queue(context, device);
-
     // TODO kan kernel arguments setten misschien met een functie?
     // die een vector van void pointers binnen krijgt waar alles in zit
     kernel.setArg(0, memBuf);
     kernel.setArg(1, memBuf2);
-    kernel.setArg(2, input.get_rows());
-    kernel.setArg(3, input.get_columns());
+    kernel.setArg(2, 32);
+    kernel.setArg(3, 32);
     queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(32, 32, 3));
-    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * output.array.size(), output.array.data());
-    std::cout << "Message from GPU: " << std::endl;
-
+    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
     return output;
 }
 
-Matrix2D<double> Gpu::convolute(Matrix3D<double> input, Matrix3D<double> conv_kernel, double bias) {
-    Matrix2D<double> output = Matrix2D<double>(input.get_rows() - conv_kernel.get_rows() + 1, input.get_columns() - conv_kernel.get_columns() + 1);
+std::vector<Matrix2D<double>> Gpu::convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias) {
+    int out_rows = (32 - conv_kernel.get_rows() + 1);
+    int out_cols = (32 - conv_kernel.get_columns() + 1);
+    std::vector<double> output = std::vector<double>(out_rows * out_cols * 50000);
     build_program();
-    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * input.array.size(), input.array.data());
+    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * input.size(), input.data());
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * conv_kernel.array.size(), conv_kernel.array.data());
-    cl::Buffer memBuf3(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.array.size(), output.array.data());
+    cl::Buffer memBuf3(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.size(), output.data());
     cl::Kernel kernel(program, "convolve", nullptr);
     cl::CommandQueue queue(context, device);
-
     // TODO kan kernel arguments setten misschien met een functie?
     // die een vector van void pointers binnen krijgt waar alles in zit
     kernel.setArg(0, memBuf);
@@ -57,21 +58,24 @@ Matrix2D<double> Gpu::convolute(Matrix3D<double> input, Matrix3D<double> conv_ke
     kernel.setArg(2, memBuf3);
     kernel.setArg(3, conv_kernel.get_rows());
     kernel.setArg(4, conv_kernel.get_columns());
-    kernel.setArg(5, input.get_rows());
-    kernel.setArg(6, input.get_columns());
-    kernel.setArg(7, input.get_channels());
-    kernel.setArg(8, output.get_columns());
-    kernel.setArg(9, bias);
-    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(output.get_rows(), output.get_columns()));
-    queue.enqueueReadBuffer(memBuf3, CL_TRUE, 0, sizeof(double) * output.array.size(), output.array.data());
-
-    return output;
+    kernel.setArg(5, 32);
+    kernel.setArg(6, 32);
+    kernel.setArg(7, 3);
+    kernel.setArg(8, out_cols);
+    kernel.setArg(9, out_rows);
+    kernel.setArg(10, bias);
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(out_rows, out_cols));
+    queue.enqueueReadBuffer(memBuf3, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
+    std::vector<Matrix2D<double>> result(50000, Matrix2D<double>(out_rows, out_cols));
+    for (int i = 0; i < 50000; i++) {
+        for (int j = 0; j < out_rows; j++) {
+            for (int k = 0; k < out_cols; k++) {
+                result[i].set(j, k, output[j * out_cols + k]);
+            }
+        }
+    }
+    return result;
 }
-
-// void Gpu::convolve(int input_channels, int input_size, int pad, int stride, int start_channel, int output_size, std::vector<Image> &input_im, std::vector<double> output_im) {
-//     build_program();
-
-// }
 
 cl::Context Gpu::make_context() {
     cl::Context context(this->device);
