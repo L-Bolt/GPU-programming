@@ -31,13 +31,15 @@ class Gui {
         bool is_enabled() const {return enabled;};
 
     private:
-        int setup();
         void update();
 
         std::string window_name;
         bool enabled = true;
         GLFWwindow* window;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        ImGuiIO io;
+
+        bool show_another_window = false;
 };
 
 
