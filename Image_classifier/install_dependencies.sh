@@ -10,4 +10,6 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew install glfw
     brew install boost
     brew install ocl-icd
+else
+    echo -n "Unsupported operating system. Use Linux or MacOS"
 fi
