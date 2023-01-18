@@ -40,6 +40,7 @@ class Gui {
         ImGuiIO io;
 
         bool show_another_window = false;
+        bool model_trained = false;
 };
 
 
