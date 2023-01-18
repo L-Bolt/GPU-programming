@@ -2,6 +2,7 @@
 #include "include/Gpu.h"
 #include "include/Cnn.h"
 #include "include/Matrix.hpp"
+#include "include/Gui.h"
 
 
 int main() {
@@ -14,6 +15,8 @@ int main() {
     std::unique_ptr<Dataset> dataset = std::make_unique<Dataset>("../dataset/cifar-10-batches-bin");
     std::unique_ptr<Gpu> gpu = std::make_unique<Gpu>(std::vector<std::string>{"../src/kernels/test.cl"});
     CNN cnn(input_dim, kernel_dim, pool_size, 196, 10);
+    Gui gui("test");
+
 
     cnn.train(dataset->training_set, dataset->labels, 0.001, 12);
     std::cout << "validating: " << std::endl;

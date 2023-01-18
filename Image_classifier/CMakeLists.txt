@@ -97,7 +97,7 @@ target_include_directories (image_classifier PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} 
 if (NOT MACOSX)
   target_link_libraries (image_classifier ${OPENGL_LIBRARIES} ${OpenCL_LIBRARY} ${OpenCV_LIBS} dl boost_system imgui) #imagehlp)
 else()
-  target_link_libraries (image_classifier ${OPENGL_LIBRARIES} ${OpenCL_LIBRARY} ${OpenCV_LIBS} imgui) #imagehlp)
+  target_link_libraries (image_classifier ${OPENGL_LIBRARIES} ${OpenCL_LIBRARY} ${OpenCV_LIBS} boost_system imgui) #imagehlp)
 endif()
 
 # TODO: Add tests and install targets if needed.

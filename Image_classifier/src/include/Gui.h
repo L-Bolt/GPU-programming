@@ -1,5 +1,5 @@
-#ifndef IMAGE
-#define IMAGE
+#ifndef GUI
+#define GUI
 
 #include <stdio.h>
 #include <string>
@@ -24,7 +24,7 @@
 
 class Gui {
     public:
-        Gui::Gui(std::string window_name);
+        Gui(std::string window_name);
         ~Gui() = default;
 
         bool running = true;
