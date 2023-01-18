@@ -10,3 +10,4 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew install glfw
     brew install boost
     brew install ocl-icd
+fi
