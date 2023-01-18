@@ -27,6 +27,9 @@ Matrix3D<double> Gpu::normalize(Matrix3D<unsigned char> input) {
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.array.size(), output.array.data());
     cl::Kernel kernel(program, "normalization", nullptr);
     cl::CommandQueue queue(context, device);
+
+    // TODO kan kernel arguments setten misschien met een functie?
+    // die een vector van void pointers binnen krijgt waar alles in zit
     kernel.setArg(0, memBuf);
     kernel.setArg(1, memBuf2);
     kernel.setArg(2, input.get_rows());
@@ -46,6 +49,9 @@ Matrix2D<double> Gpu::convolute(Matrix3D<double> input, Matrix3D<double> conv_ke
     cl::Buffer memBuf3(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.array.size(), output.array.data());
     cl::Kernel kernel(program, "convolve", nullptr);
     cl::CommandQueue queue(context, device);
+
+    // TODO kan kernel arguments setten misschien met een functie?
+    // die een vector van void pointers binnen krijgt waar alles in zit
     kernel.setArg(0, memBuf);
     kernel.setArg(1, memBuf2);
     kernel.setArg(2, memBuf3);
@@ -83,8 +89,6 @@ bool Gpu::build_program() {
 }
 
 cl::Program Gpu::make_program() {
-    // TODO als de gpu_test() functie niet hello world print moet deze code weer
-    // aan.
     std::vector<std::string> kernels;
     for (std::string source_path : this->source_paths) {
         std::ifstream kernel_file(source_path);
