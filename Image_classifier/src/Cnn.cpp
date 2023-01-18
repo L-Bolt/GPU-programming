@@ -171,8 +171,8 @@ void CNN::back_propagate(std::vector<double> &dZ2,
 
 	// Update weights and biases.
 	dW1 = dW1.transpose();
-	for (size_t i = 0; i < dW1.get_rows(); i++) {
-		for (size_t j = 0; j < dW1.get_columns(); j++) {
+	for (int i = 0; i < dW1.get_rows(); i++) {
+		for (int j = 0; j < dW1.get_columns(); j++) {
 			dW1.set(i, j, dW1.get(i, j) * learning_rate);
 			this->weights.at(0).set(i, j, this->weights.at(0).get(i, j) - dW1.get(i, j));
 		}
