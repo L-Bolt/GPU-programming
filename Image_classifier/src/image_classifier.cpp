@@ -20,4 +20,6 @@ int main() {
     cnn.validate(dataset->test_set, dataset->test_labels);
 
     dataset->display_all_images();
+
+    return 0;
 }
