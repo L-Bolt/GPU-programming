@@ -19,10 +19,16 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>> images) {
-    std::vector<double> output(images.size() * images[0].size());
+std::vector<Matrix2D<double>> Gpu::preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels) {
+    int size = images->size();
+    return Gpu::convolute(Gpu::normalize(images, rows, cols, channels, size), conv_kernel, bias, rows, cols, channels, size);
+}
+
+std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>>* images, int rows, int cols, int channels, int size) {
+    std::vector<unsigned char> test = images->front();
+    std::vector<double> output(images->size() * images->front().size());
     std::vector<unsigned char> flattened;
-    for (auto const &v: images) {
+    for (auto const &v: *images) {
         flattened.insert(flattened.end(), v.begin(), v.end());
     }
     build_program();
@@ -34,17 +40,19 @@ std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>> image
     // die een vector van void pointers binnen krijgt waar alles in zit
     kernel.setArg(0, memBuf);
     kernel.setArg(1, memBuf2);
-    kernel.setArg(2, 32);
-    kernel.setArg(3, 32);
-    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(32, 32, 3));
+    kernel.setArg(2, rows);
+    kernel.setArg(3, cols);
+    kernel.setArg(4, channels);
+    kernel.setArg(5, size);
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(rows, cols, channels));
     queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
     return output;
 }
 
-std::vector<Matrix2D<double>> Gpu::convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias) {
-    int out_rows = (32 - conv_kernel.get_rows() + 1);
-    int out_cols = (32 - conv_kernel.get_columns() + 1);
-    std::vector<double> output = std::vector<double>(out_rows * out_cols * 50000);
+std::vector<Matrix2D<double>> Gpu::convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels, int size) {
+    int out_rows = (rows - conv_kernel.get_rows() + 1);
+    int out_cols = (cols - conv_kernel.get_columns() + 1);
+    std::vector<double> output = std::vector<double>(out_rows * out_cols * size);
     build_program();
     cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * input.size(), input.data());
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * conv_kernel.array.size(), conv_kernel.array.data());
@@ -58,19 +66,20 @@ std::vector<Matrix2D<double>> Gpu::convolute(std::vector<double> input, Matrix3D
     kernel.setArg(2, memBuf3);
     kernel.setArg(3, conv_kernel.get_rows());
     kernel.setArg(4, conv_kernel.get_columns());
-    kernel.setArg(5, 32);
-    kernel.setArg(6, 32);
-    kernel.setArg(7, 3);
+    kernel.setArg(5, rows);
+    kernel.setArg(6, cols);
+    kernel.setArg(7, channels);
     kernel.setArg(8, out_cols);
     kernel.setArg(9, out_rows);
     kernel.setArg(10, bias);
+    kernel.setArg(11, size);
     queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(out_rows, out_cols));
     queue.enqueueReadBuffer(memBuf3, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
-    std::vector<Matrix2D<double>> result(50000, Matrix2D<double>(out_rows, out_cols));
-    for (int i = 0; i < 50000; i++) {
+    std::vector<Matrix2D<double>> result(size, Matrix2D<double>(out_rows, out_cols));
+    for (int i = 0; i < size; i++) {
         for (int j = 0; j < out_rows; j++) {
             for (int k = 0; k < out_cols; k++) {
-                result[i].set(j, k, output[j * out_cols + k]);
+                result[i].set(j, k, output[(j * out_cols + k) + i * (out_cols * out_rows)]);
             }
         }
     }
