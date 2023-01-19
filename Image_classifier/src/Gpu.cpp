@@ -19,9 +19,9 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-std::vector<Matrix2D<double>> Gpu::preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels) {
+std::vector<Matrix2D<double>> Gpu::preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels, Shape &pooling_window) {
     int size = images->size();
-    return Gpu::convolute(Gpu::normalize(images, rows, cols, channels, size), conv_kernel, bias, rows, cols, channels, size);
+    return Gpu::max_pooling(Gpu::convolute(Gpu::normalize(images, rows, cols, channels, size), conv_kernel, bias, rows, cols, channels, size), size, (rows - conv_kernel.get_rows() + 1), (cols - conv_kernel.get_columns() + 1), pooling_window);
 }
 
 std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>>* images, int rows, int cols, int channels, int size) {
@@ -49,7 +49,7 @@ std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>>* imag
     return output;
 }
 
-std::vector<Matrix2D<double>> Gpu::convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels, int size) {
+std::vector<double> Gpu::convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels, int size) {
     int out_rows = (rows - conv_kernel.get_rows() + 1);
     int out_cols = (cols - conv_kernel.get_columns() + 1);
     std::vector<double> output = std::vector<double>(out_rows * out_cols * size);
@@ -75,6 +75,30 @@ std::vector<Matrix2D<double>> Gpu::convolute(std::vector<double> input, Matrix3D
     kernel.setArg(11, size);
     queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(out_rows, out_cols));
     queue.enqueueReadBuffer(memBuf3, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
+    return output;
+}
+
+std::vector<Matrix2D<double>> Gpu::max_pooling(std::vector<double> input, int size, int rows, int cols, Shape &pooling_window) {
+    int out_rows = (rows / pooling_window.rows);
+    int out_cols = (cols / pooling_window.columns);
+    std::vector<double> output(size * (out_rows * out_cols));
+    build_program();
+    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * input.size(), input.data());
+    cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.size(), output.data());
+    cl::Kernel kernel(program, "max_pool", nullptr);
+    cl::CommandQueue queue(context, device);
+    kernel.setArg(0, memBuf);
+    kernel.setArg(1, memBuf2);
+    kernel.setArg(2, rows);
+    kernel.setArg(3, cols);
+    kernel.setArg(4, out_rows);
+    kernel.setArg(5, out_cols);
+    kernel.setArg(6, pooling_window.rows);
+    kernel.setArg(7, pooling_window.columns);
+    kernel.setArg(8, DBL_MAX);
+    kernel.setArg(9, size);
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(rows/pooling_window.rows, cols/pooling_window.columns));
+    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
     std::vector<Matrix2D<double>> result(size, Matrix2D<double>(out_rows, out_cols));
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < out_rows; j++) {
