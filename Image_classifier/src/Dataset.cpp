@@ -14,6 +14,7 @@ Dataset::Dataset(std::string path, Gpu &gpu, Matrix3D<double> &conv_kernel, Shap
             std::cout << "Preprocessing images on GPU..." << std::endl;
             std::vector<Matrix2D<double>> processed_images = this->gpu.preprocess(&this->buffer, conv_kernel, 32, 32, 3, pool_window);
             this->image_buffer = make_images(this->buffer, processed_images);
+            std::cout << "Images have been preprocessed with GPU" << std::endl;
         }
         else {
             this->image_buffer = make_images(this->buffer);

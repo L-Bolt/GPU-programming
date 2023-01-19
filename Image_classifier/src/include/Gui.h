@@ -1,5 +1,6 @@
 #ifndef GUI
 #define GUI
+#define GLFW_INCLUDE_GLCOREARB
 
 #include <stdio.h>
 #include <string>

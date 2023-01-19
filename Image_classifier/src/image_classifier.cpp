@@ -17,8 +17,6 @@ int main() {
     CNN cnn(input_dim, kernel_dim, pool_size, 196, 10, conv_kernel);
     Gui gui("Image Classifier", &cnn, &dataset);
 
-    dataset.display_all_images();
-
     if (gui.is_enabled()) {
         gui.run();
     }
