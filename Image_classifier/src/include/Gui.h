@@ -1,6 +1,9 @@
 #ifndef GUI
 #define GUI
+
+#if defined(__APPLE__)
 #define GLFW_INCLUDE_GLCOREARB
+#endif
 
 #include <stdio.h>
 #include <string>
