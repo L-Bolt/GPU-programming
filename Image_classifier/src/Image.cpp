@@ -7,6 +7,14 @@ Image::Image(std::vector<uint8_t> *data) {
     this->matrix = Matrix3D<uint8_t>(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
 }
 
+Image::Image(std::vector<uint8_t> *data, Matrix2D<double>* preprocessed_data) {
+    this->classifier = data->at(0);
+
+    this->matrix = Matrix3D<uint8_t>(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
+    this->preprocessed_data = preprocessed_data->flatten_to_vector(0);
+    this->processed = true;
+}
+
 /**
  * @brief Displays an image.
  */

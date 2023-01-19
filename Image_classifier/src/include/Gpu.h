@@ -10,13 +10,16 @@
 
 class Gpu {
     public:
+        Gpu() = default;
         Gpu(std::vector<std::string> source_paths);
         ~Gpu() = default;
 
         bool build_program();
         bool gpu_enabled() const {return enabled;};
-        Matrix3D<double> normalize(Matrix3D<unsigned char> input);
-        Matrix2D<double> convolute(Matrix3D<double> input, Matrix3D<double> conv_kernel, double bias);
+        std::vector<double> normalize(std::vector<std::vector<unsigned char>>* images, int rows, int cols, int channels, int size);
+        std::vector<double> convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels, int size);
+        std::vector<Matrix2D<double>> max_pooling(std::vector<double> input, int size, int rows, int cols, Shape &pooling_window);
+        std::vector<Matrix2D<double>> preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, int rows, int cols, int channels, Shape &pooling_window, double bias=1.0);
 
     private:
         std::vector<std::string> source_paths;

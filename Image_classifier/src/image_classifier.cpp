@@ -10,11 +10,14 @@ int main() {
 	Shape3D input_dim={32, 32, 3};
 	Shape kernel_dim={5, 5};
 	Shape pool_size={2, 2};
+    Matrix3D<double> conv_kernel = Matrix3D<double>(kernel_dim.rows, kernel_dim.columns, 3, true);
 
-    Dataset dataset("../dataset/cifar-10-batches-bin");
-    Gpu gpu(std::vector<std::string>{"../src/kernels/test.cl"});
-    CNN cnn(input_dim, kernel_dim, pool_size, 196, 10);
+    Gpu gpu(std::vector<std::string>{"../src/kernels/preprocess.cl"});
+    Dataset dataset("../dataset/cifar-10-batches-bin", gpu, conv_kernel, pool_size);
+    CNN cnn(input_dim, kernel_dim, pool_size, 196, 10, conv_kernel);
     Gui gui("Image Classifier", &cnn, &dataset);
+
+    dataset.display_all_images();
 
     if (gui.is_enabled()) {
         gui.run();
@@ -24,6 +27,4 @@ int main() {
         std::cout << "validating: " << std::endl;
         cnn.validate(*dataset.get_test_set(), dataset.test_labels);
     }
-
-    return 0;
 }

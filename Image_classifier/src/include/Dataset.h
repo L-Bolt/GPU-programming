@@ -10,6 +10,8 @@
 
 #include "util.h"
 #include "Image.h"
+#include "Gpu.h"
+#include "Matrix.hpp"
 
 #define CIFAR_CLASSES 10
 #define CIFAR_IMAGE_COUNT 60000
@@ -20,7 +22,7 @@
 class Dataset {
     public:
         Dataset() = default;
-        Dataset(std::string path);
+        Dataset(std::string path, Gpu &gpu, Matrix3D<double> &conv_kernel, Shape &pool_window);
         ~Dataset() = default;
 
         void display_all_images();
@@ -32,6 +34,7 @@ class Dataset {
 
         std::vector<std::vector<double>> labels;
         std::vector<std::vector<double>> test_labels;
+        std::vector<std::vector<uint8_t>>* get_buffer() {return &buffer;};
 
     private:
         std::vector<std::vector<uint8_t>> buffer;
@@ -63,6 +66,8 @@ class Dataset {
         std::vector<Image> make_images(std::vector<std::vector<uint8_t>> &buffer);
         std::vector<Image> training_set;
         std::vector<Image> test_set;
+        std::vector<Image> make_images(std::vector<std::vector<uint8_t>> &buffer, std::vector<Matrix2D<double>> &processed_buffer);
+        Gpu gpu;
 };
 
 #endif

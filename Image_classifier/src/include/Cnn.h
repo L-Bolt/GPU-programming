@@ -9,8 +9,7 @@
 
 class CNN {
     public:
-        CNN() = default;
-        CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim);
+        CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel);
         ~CNN() = default;
 
         void train(std::vector<Image> &Xtrain,
