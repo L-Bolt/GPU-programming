@@ -14,6 +14,7 @@ class Image {
     public:
         Image(): classifier{255} {};
         Image(std::vector<uint8_t> *data);
+        Image(std::vector<uint8_t> *data, Matrix2D<double>* preprocessed_data);
         ~Image() = default;
 
         void display_image(std::string window_name);
@@ -24,6 +25,8 @@ class Image {
         Matrix3D<double> normalize(double mean, double stdev) {return matrix.normalize(mean, stdev);};
         int get_size() const {return CIFAR_IMAGE_SIZE;};
         Matrix3D<uint8_t> matrix;
+        std::vector<double> preprocessed_data;
+        bool processed = false;
 
     private:
         uint8_t classifier;

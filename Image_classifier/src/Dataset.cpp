@@ -5,10 +5,19 @@
  * Constructor for the dataset class.
  * Calls the make_buffer function to store the dataset in memory
  */
-Dataset::Dataset(std::string path) {
+Dataset::Dataset(std::string path, Gpu &gpu, Matrix3D<double> &conv_kernel, Shape &pool_window) {
     try {
         this->buffer = make_buffer(path);
-        this->image_buffer = make_images(this->buffer);
+        this->gpu = gpu;
+
+        if (this->gpu.gpu_enabled()) {
+            this->processed_images = this->gpu.preprocess(&this->buffer, conv_kernel, 32, 32, 3, pool_window);
+            this->image_buffer = make_images(this->buffer, this->processed_images);
+        }
+        else {
+            this->image_buffer = make_images(this->buffer);
+        }
+
         std::cout << "\033[1;32mDataset has been read into memory.\033[0m\n" <<std::endl;
 
         this->training_set = std::vector<Image>(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
@@ -76,6 +85,15 @@ std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffe
     std::vector<Image> image_buffer(CIFAR_IMAGE_COUNT);
     for (int i = 0; i < CIFAR_IMAGE_COUNT; i++) {
         image_buffer[i] = Image(&buffer[i]);
+    }
+
+    return image_buffer;
+}
+
+std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffer, std::vector<Matrix2D<double>> &processed_buffer) {
+    std::vector<Image> image_buffer(CIFAR_IMAGE_COUNT);
+    for (int i = 0; i < CIFAR_IMAGE_COUNT; i++) {
+        image_buffer[i] = Image(&buffer[i], &processed_buffer[i]);
     }
 
     return image_buffer;

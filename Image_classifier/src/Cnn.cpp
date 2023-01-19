@@ -1,10 +1,10 @@
 #include "include/Cnn.h"
 
-CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim) {
+CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel) {
 	assert(input_dim.rows > kernel_size.rows && input_dim.columns > kernel_size.columns);
 	assert(input_dim.rows - kernel_size.rows + 1 > pool_size.rows && input_dim.columns - kernel_size.columns + 1 > pool_size.columns);
 
-	this->kernel = Matrix3D<double>(kernel_size.rows, kernel_size.columns, 3, true);
+	this->kernel = conv_kernel;
 	this->pool_window = pool_size;
 	this->output_dim = output_dim;
 	this->hidden_layer_nodes = hidden_layer_nodes;
@@ -80,13 +80,18 @@ double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> 
 void CNN::forward_propagate(Image &input, std::vector<std::vector<double>> &a, std::vector<std::vector<double>> &z) {
 	// Convolve the normalized matrix of the input image and apply the ReLu activation function.
 	// This transforms the 3D image into a 2D matrix.
-	Matrix2D<double> convolved = input.normalize(0.5, 0.5).convolve(this->kernel);
+	std::vector<double> flattened_pool;
+	Matrix2D<double> pooled;
+	if (!input.processed) {
+		Matrix2D<double> convolved = input.normalize(0.5, 0.5).convolve(this->kernel);
 
-	// Take the max pooling of the convolved image.
-	Matrix2D<double> pooled = convolved.max_pooling(this->pool_window);
-
-	// X: feature vector
-	std::vector<double> flattened_pool = pooled.flatten_to_vector(0);
+		// Take the max pooling of the convolved image.
+		pooled = convolved.max_pooling(this->pool_window);
+		std::vector<double> flattened_pool = pooled.flatten_to_vector(0);
+	}
+	else {
+		flattened_pool = input.preprocessed_data;
+	}
 
 	std::vector<double> Z1 = this->weights.at(0).transpose().dot(flattened_pool);
 	assert((int)Z1.size() == this->biases.at(0).get_rows());
@@ -130,13 +135,18 @@ void CNN::back_propagate(std::vector<double> &dZ2,
 						 std::vector<std::vector<double>> &z,
 						 Image &input, double (*active_fn_der)(double), double learning_rate) {
 
-	Matrix2D<double> convolved = input.normalize(0.5, 0.5).convolve(this->kernel);
+	std::vector<double> X;
+	Matrix2D<double> pooled;
+	if (!input.processed) {
+		Matrix2D<double> convolved = input.normalize(0.5, 0.5).convolve(this->kernel);
 
-	// Take the max pooling of the convolved image.
-	Matrix2D<double> pooled = convolved.max_pooling(this->pool_window);
-
-	// X: feature vector
-	std::vector<double> X = pooled.flatten_to_vector(0);
+		// Take the max pooling of the convolved image.
+		pooled = convolved.max_pooling(this->pool_window);
+		std::vector<double> X = pooled.flatten_to_vector(0);
+	}
+	else {
+		X = input.preprocessed_data;
+	}
 
 	Matrix2D<double> dz2_mat(this->output_dim, 1, dZ2);
 	Matrix2D<double> a1_mat(1, this->hidden_layer_nodes, a.at(0));
