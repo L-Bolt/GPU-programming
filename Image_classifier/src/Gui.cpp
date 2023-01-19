@@ -135,7 +135,7 @@ void Gui::train_cnn(CNN *cnn, Dataset *dataset, int epochs) {
 void Gui::update() {
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
     ImGui::Begin("Setup");                          // Create a window called "Hello, world!" and append into it.
-    ImGui::SliderInt("epochs", &run_epochs, 1, 100);
+    ImGui::SliderInt("epochs", &run_epochs, 1, 10);
     ImGui::Text("Train the model");               // Display some text (you can use a format strings too)
     if (ImGui::Button("Train")) {
         if (!this->training && !this->cnn->is_trained()) {

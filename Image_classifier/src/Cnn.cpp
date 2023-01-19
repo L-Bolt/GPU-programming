@@ -44,7 +44,7 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 		std::cout << "Running epoch: " << epoch << std::endl;
 		for (size_t it = 0; it < Xtrain.size(); it++) {
 		// for (size_t it = 0; it < 50; it++) {
-			this->iteration+= 1;
+			this->iteration = this->iteration + 1;
 
 			if (this->stop) {
 				std::cout << "stopped training" << std::endl;
@@ -61,7 +61,7 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate);
 
 		}
-		this->epoch += 1;
+		this->epoch = this->epoch + 1.0;
 		std::cout << "epoch: " << epoch << " error: " << (error / Xtrain.size()) << std::endl;
 	}
 	this->trained = true;
