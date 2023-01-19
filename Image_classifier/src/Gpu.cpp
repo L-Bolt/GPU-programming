@@ -4,6 +4,7 @@
 Gpu::Gpu(std::vector<std::string> source_paths) {
     this->source_paths = source_paths;
 
+    // TODO: kan weg wanneer gpu bug op maccie gefixt is.
     #if defined(__APPLE__)
         this->enabled = false;
     #endif
