@@ -19,13 +19,11 @@ int main() {
     if (gui.is_enabled()) {
         gui.run();
     }
-
-
-    // cnn.train(dataset->training_set, dataset->labels, 0.001, 12);
-    // std::cout << "validating: " << std::endl;
-    // cnn.validate(dataset->test_set, dataset->test_labels);
-
-    // dataset->display_all_images();
+    else {
+        cnn.train(*dataset.get_training_set(), dataset.labels, 0.001, 12);
+        std::cout << "validating: " << std::endl;
+        cnn.validate(*dataset.get_test_set(), dataset.test_labels);
+    }
 
     return 0;
 }

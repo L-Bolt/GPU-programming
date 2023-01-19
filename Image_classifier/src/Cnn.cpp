@@ -25,7 +25,6 @@ CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer
 
 float CNN::get_training_percentage() {
 	int total = this->epochs * this->training_size;
-	//std::cout << total << ' ' << this->epoch << ' ' << ' ' << (this->iteration) << '\n';
 
 	return (this->iteration / (float) total) * 100.0;
 }
@@ -44,6 +43,7 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 
 		std::cout << "Running epoch: " << epoch << std::endl;
 		for (size_t it = 0; it < Xtrain.size(); it++) {
+		// for (size_t it = 0; it < 50; it++) {
 			this->iteration+= 1;
 
 			if (this->stop) {
@@ -74,9 +74,14 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> &Yval) {
 	assert(Xval.size() == Yval.size());
 
+	this->validated = false;
+
 	double error = 0;
-	unsigned int correct = 0;
 	for (size_t it = 0; it < Xval.size(); it++) {
+		if (this->stop) {
+			return 0.0;
+		}
+
 		std::vector<std::vector<double>> a;
 		std::vector<std::vector<double>> z;
 
@@ -84,14 +89,15 @@ double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> 
 		std::vector<double> prediction = a.at(1);
 		int classified = np::get_max_class(prediction);
 		if (classified == Xval[it].get_class()) {
-			correct += 1;
+			this->correctly_classified++;
 		}
 
 		error += cross_entropy(a.at(1), Yval[it]);
 	}
 
-	std::cout << "Images correctly classified: " << correct << '\n';
+	std::cout << "Images correctly classified: " << this->correctly_classified << '\n';
 	std::cout << " error: " << (error / Xval.size()) << std::endl;
+	this->validated = true;
 
 	return (error / Xval.size());
 }

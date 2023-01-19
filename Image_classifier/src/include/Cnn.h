@@ -18,6 +18,8 @@ class CNN {
                    double learning_rate, int epochs);
         double validate(std::vector<Image> &Xval, std::vector<std::vector<double>> &Yval);
         bool is_trained() const {return trained;};
+        bool is_validated() const {return validated;};
+        int images_correct() {return correctly_classified;};
         void quit() {stop = true;};
         float get_training_percentage();
 
@@ -36,11 +38,13 @@ class CNN {
         Shape pool_window;
         std::atomic<float> iteration = 0.0;
         std::atomic<float> epoch = 0.0;
+        std::atomic<int> correctly_classified = 0;
         int epochs = 0;
         int training_size = 0;
         int output_dim;
         int hidden_layer_nodes;
         bool trained = false;
+        bool validated = false;
         bool stop = false;
 };
 

@@ -116,37 +116,72 @@ Gui::~Gui() {
     glfwDestroyWindow(this->window);
     glfwTerminate();
     this->cnn->quit();
-    this->training_thread.join();
+    if (this->join_train_thread) {
+        this->training_thread.join();
+    }
+    if (this->join_validate_thread) {
+        this->validating_thread.join();
+    }
 }
 
-void Gui::train_cnn(CNN *cnn, Dataset *dataset) {
-    cnn->train(*dataset->get_training_set(), dataset->labels, 0.001, 12);
+void Gui::validate_cnn(CNN *cnn, Dataset *dataset) {
+    cnn->validate(*dataset->get_test_set(), dataset->test_labels);
+}
+
+void Gui::train_cnn(CNN *cnn, Dataset *dataset, int epochs) {
+    cnn->train(*dataset->get_training_set(), dataset->labels, 0.001, epochs);
 }
 
 void Gui::update() {
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-
     ImGui::Begin("Setup");                          // Create a window called "Hello, world!" and append into it.
-
+    ImGui::SliderInt("epochs", &run_epochs, 1, 100);
     ImGui::Text("Train the model");               // Display some text (you can use a format strings too)
     if (ImGui::Button("Train")) {
-        if (!training) {
-            training = true;
-            training_thread = std::thread(train_cnn, this->cnn, this->dataset);
+        if (!this->training && !this->cnn->is_trained()) {
+            this->training = true;
+            this->join_train_thread = true;
+            this->training_thread = std::thread(train_cnn, this->cnn, this->dataset, run_epochs);
         }
         else {
             std::cout << "already training" << std::endl;
         }
     }
 
-    if (this->cnn->is_trained()) {
-        training = false;
-    }
-
-    if (training) {
+    if (this->training) {
         ImGui::Text("Training model... %.2f%% trained", this->cnn->get_training_percentage());
     }
 
+    if (this->cnn->is_trained()) {
+        ImGui::Text("Model has been trained");
+        if (this->training_thread.joinable() && this->join_train_thread) {
+            std::cout << "training thread joined" << std::endl;
+            this->training_thread.join();
+            this->training = false;
+            this->join_train_thread = false;
+        }
+    }
+
+    if (this->cnn->is_trained()) {
+        if (ImGui::Button("Validate")) {
+            if (!this->validating && !this->cnn->is_validated()) {
+                this->validating = true;
+                this->join_validate_thread = true;
+                this->validating_thread = std::thread(validate_cnn, this->cnn, this->dataset);
+            }
+            else {
+                std::cout << "already validating" << std::endl;
+            }
+        }
+    }
+
+    if (this->cnn->is_validated() && this->join_validate_thread) {
+        if (this->validating_thread.joinable() && this->join_validate_thread) {
+            std::cout << "validating thread joined" << std::endl;
+            this->validating_thread.join();
+            this->join_validate_thread = false;
+        }
+    }
 
     ImGui::Checkbox("Images", &show_another_window);
     ImGui::End();

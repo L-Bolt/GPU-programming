@@ -37,7 +37,8 @@ class Gui {
 
     private:
         void update();
-        static void train_cnn(CNN *cnn, Dataset *dataset);
+        static void train_cnn(CNN *cnn, Dataset *dataset, int epochs);
+        static void validate_cnn(CNN *cnn, Dataset *dataset);
 
         std::string window_name;
         bool enabled = true;
@@ -47,10 +48,15 @@ class Gui {
         CNN *cnn;
         Dataset *dataset;
         std::thread training_thread;
+        std::thread validating_thread;
 
         bool show_another_window = false;
         bool model_trained = false;
         bool training = false;
+        bool validating = false;
+        bool join_train_thread = false;
+        bool join_validate_thread = false;
+        int run_epochs = 1;
 };
 
 
