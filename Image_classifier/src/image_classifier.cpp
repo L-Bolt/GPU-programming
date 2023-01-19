@@ -19,8 +19,10 @@ int main() {
     std::cout << "validating: " << std::endl;
     cnn.validate(dataset->test_set, dataset->test_labels);
 
-    // std::vector<Matrix2D<double>> images = gpu->preprocess(dataset->get_buffer(), conv_kernel, 1, input_dim.rows, input_dim.columns, input_dim.channels);
+    // std::vector<Matrix2D<double>> images = gpu->preprocess(dataset->get_buffer(), conv_kernel, 1, input_dim.rows, input_dim.columns, input_dim.channels, pool_size);
     // images[5].print(true);
+    // std::cout << "\n\n\n" << std::endl;
+    // dataset->training_set[5].normalize().convolve(conv_kernel).max_pooling(pool_size).print(true);
 
     dataset->display_all_images();
 }
