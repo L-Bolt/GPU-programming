@@ -40,7 +40,6 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 	for (int epoch = 1; epoch <= epochs; epoch++) {
 		double error = 0.0;
 
-
 		std::cout << "Running epoch: " << epoch << std::endl;
 		for (size_t it = 0; it < Xtrain.size(); it++) {
 		// for (size_t it = 0; it < 50; it++) {

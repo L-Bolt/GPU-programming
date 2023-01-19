@@ -183,6 +183,10 @@ void Gui::update() {
         }
     }
 
+    if (this->cnn->is_validated()) {
+        ImGui::Text("Classified %d images correctly (%.2f%%)", cnn->images_correct(), (float) cnn->images_correct() / (float) this->dataset->get_test_set()->size());
+    }
+
     ImGui::Checkbox("Images", &show_another_window);
     ImGui::End();
 
