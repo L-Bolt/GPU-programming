@@ -116,7 +116,7 @@ void CNN::forward_propagate(Image &input, std::vector<std::vector<double>> &a, s
 
 		// Take the max pooling of the convolved image.
 		pooled = convolved.max_pooling(this->pool_window);
-		std::vector<double> flattened_pool = pooled.flatten_to_vector(0);
+		flattened_pool = pooled.flatten_to_vector(0);
 	}
 	else {
 		flattened_pool = input.preprocessed_data;
