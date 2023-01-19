@@ -23,13 +23,34 @@ CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer
 	this->biases.push_back(Bias1);
 }
 
+float CNN::get_training_percentage() {
+	int total = this->epochs * this->training_size;
+	//std::cout << total << ' ' << this->epoch << ' ' << ' ' << (this->iteration) << '\n';
+
+	return (this->iteration / (float) total) * 100.0;
+}
+
 void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Ytrain, double learning_rate, int epochs) {
 	assert(Xtrain.size() == Ytrain.size());
 
+	this->training_size = (int) Xtrain.size();
+
+	this->trained = false;
+	this->epochs = epochs;
+
 	for (int epoch = 1; epoch <= epochs; epoch++) {
 		double error = 0.0;
+
+
 		std::cout << "Running epoch: " << epoch << std::endl;
 		for (size_t it = 0; it < Xtrain.size(); it++) {
+			this->iteration+= 1;
+
+			if (this->stop) {
+				std::cout << "stopped training" << std::endl;
+				return;
+			}
+
 			std::vector<std::vector<double>> a;
 			std::vector<std::vector<double>> z;
 
@@ -38,9 +59,12 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 			error += cross_entropy(a.at(1), Ytrain[it]);
 			std::vector<double> dZ2 = np::subtract(a.at(1), Ytrain[it]);
 			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate);
+
 		}
+		this->epoch += 1;
 		std::cout << "epoch: " << epoch << " error: " << (error / Xtrain.size()) << std::endl;
 	}
+	this->trained = true;
 }
 
 /*	Calculate the Validation error over the validation set.

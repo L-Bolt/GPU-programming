@@ -1,13 +1,14 @@
 #include "include/Gui.h"
 
-
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-Gui::Gui(std::string window_name) {
-     // Setup window
+Gui::Gui(std::string window_name, CNN *cnn, Dataset *dataset) {
+    // Setup window
+    this->cnn = cnn;
+    this->dataset = dataset;
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {
         this->enabled = false;
@@ -15,27 +16,25 @@ Gui::Gui(std::string window_name) {
     }
 
     // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-#elif defined(__APPLE__)
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-#endif
+    #if defined(IMGUI_IMPL_OPENGL_ES2)
+        // GL ES 2.0 + GLSL 100
+        const char* glsl_version = "#version 100";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+    #elif defined(__APPLE__)
+        // GL 3.2 + GLSL 150
+        const char* glsl_version = "#version 150";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+    #else
+        // GL 3.0 + GLSL 130
+        const char* glsl_version = "#version 130";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    #endif
 
     // Create window with graphics context
     window = glfwCreateWindow(1280, 720, window_name.c_str(), NULL, NULL);
@@ -44,7 +43,7 @@ Gui::Gui(std::string window_name) {
         return;
     }
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
+    glfwSwapInterval(1); // Enable v-stink
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -116,36 +115,46 @@ Gui::~Gui() {
 
     glfwDestroyWindow(this->window);
     glfwTerminate();
+    this->cnn->quit();
+    this->training_thread.join();
+}
+
+void Gui::train_cnn(CNN *cnn, Dataset *dataset) {
+    cnn->train(*dataset->get_training_set(), dataset->labels, 0.001, 2);
 }
 
 void Gui::update() {
-
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 
-    static float f = 0.0f;
-    static int counter = 0;
+    ImGui::Begin("Setup");                          // Create a window called "Hello, world!" and append into it.
 
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-    ImGui::Checkbox("Another Window", &show_another_window);
-
-    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-    if (ImGui::Button("Button")) {                            // Buttons return true when clicked (most widgets return true when edited/activated)
-        counter++;
+    ImGui::Text("Train the model");               // Display some text (you can use a format strings too)
+    if (ImGui::Button("Train")) {
+        if (!training) {
+            training = true;
+            training_thread = std::thread(train_cnn, this->cnn, this->dataset);
+        }
+        else {
+            std::cout << "already training" << std::endl;
+        }
     }
 
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
+    if (this->cnn->is_trained()) {
+        training = false;
+    }
 
+    if (training) {
+        ImGui::Text("Training model... %.2f%% trained", this->cnn->get_training_percentage());
+    }
+
+
+    ImGui::Checkbox("Images", &show_another_window);
     ImGui::End();
 
-    // 3. Show another simple window.
+    //3. Show another simple window.
     if (show_another_window) {
-        ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Hello from another window!");
+        ImGui::Begin("Images", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        ImGui::Text("See the images in the dataset");
         if (ImGui::Button("Close Me")) {
             show_another_window = false;
         }

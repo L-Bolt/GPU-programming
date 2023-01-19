@@ -3,7 +3,12 @@
 
 #include <stdio.h>
 #include <string>
+#include <iostream>
+#include <thread>
+#include <future>
 
+#include "Dataset.h"
+#include "Cnn.h"
 #include "../../lib/imgui/imgui.h"
 #include "../../lib/imgui/backends/imgui_impl_glfw.h"
 #include "../../lib/imgui/backends/imgui_impl_opengl3.h"
@@ -24,7 +29,7 @@
 
 class Gui {
     public:
-        Gui(std::string window_name);
+        Gui(std::string window_name, CNN *cnn, Dataset *dataset);
         ~Gui();
 
         void run();
@@ -32,15 +37,20 @@ class Gui {
 
     private:
         void update();
+        static void train_cnn(CNN *cnn, Dataset *dataset);
 
         std::string window_name;
         bool enabled = true;
         GLFWwindow* window;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
         ImGuiIO io;
+        CNN *cnn;
+        Dataset *dataset;
+        std::thread training_thread;
 
         bool show_another_window = false;
         bool model_trained = false;
+        bool training = false;
 };
 
 

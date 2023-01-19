@@ -19,6 +19,7 @@
 
 class Dataset {
     public:
+        Dataset() = default;
         Dataset(std::string path);
         ~Dataset() = default;
 
@@ -26,8 +27,9 @@ class Dataset {
         void write_images_to_disk();
         Image &get_image(int index);
 
-        std::vector<Image> training_set;
-        std::vector<Image> test_set;
+        std::vector<Image> *get_training_set() {return &training_set;};
+        std::vector<Image> *get_test_set() {return &test_set;};
+
         std::vector<std::vector<double>> labels;
         std::vector<std::vector<double>> test_labels;
 
@@ -59,6 +61,8 @@ class Dataset {
 
         std::vector<std::vector<uint8_t>> make_buffer(std::string& path);
         std::vector<Image> make_images(std::vector<std::vector<uint8_t>> &buffer);
+        std::vector<Image> training_set;
+        std::vector<Image> test_set;
 };
 
 #endif
