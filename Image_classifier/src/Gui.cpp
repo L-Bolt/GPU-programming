@@ -120,7 +120,7 @@ Gui::~Gui() {
 }
 
 void Gui::train_cnn(CNN *cnn, Dataset *dataset) {
-    cnn->train(*dataset->get_training_set(), dataset->labels, 0.001, 2);
+    cnn->train(*dataset->get_training_set(), dataset->labels, 0.001, 12);
 }
 
 void Gui::update() {
