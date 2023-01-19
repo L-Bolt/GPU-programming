@@ -186,11 +186,11 @@ Gui::~Gui() {
 }
 
 void Gui::validate_cnn(CNN *cnn, Dataset *dataset) {
-    cnn->validate(*dataset->get_test_set(), dataset->test_labels);
+    cnn->validate(*dataset->get_test_set(), *dataset->get_test_labels());
 }
 
 void Gui::train_cnn(CNN *cnn, Dataset *dataset, int epochs) {
-    cnn->train(*dataset->get_training_set(), dataset->labels, 0.001, epochs);
+    cnn->train(*dataset->get_training_set(), *dataset->get_training_labels(), 0.001, epochs);
 }
 
 void Gui::update() {
@@ -264,7 +264,9 @@ void Gui::update() {
         ImGui::Image((void*)(intptr_t)image_texture, imageSize);
         ImGui::Text("Image class: %s", label.c_str());
         if (ImGui::Button("Next")) {
-            this->image_counter++;
+            if (this->image_counter < this->dataset->get_buffer()->size()) {
+                this->image_counter++;
+            }
         }
         ImGui::End();
     }
