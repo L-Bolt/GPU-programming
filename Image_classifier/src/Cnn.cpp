@@ -42,7 +42,6 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 
 		std::cout << "Running epoch: " << epoch << std::endl;
 		for (size_t it = 0; it < Xtrain.size(); it++) {
-		// for (size_t it = 0; it < 50; it++) {
 			this->iteration = this->iteration + 1;
 
 			if (this->stop) {
@@ -110,12 +109,11 @@ void CNN::forward_propagate(Image &input, std::vector<std::vector<double>> &a, s
 	// Convolve the normalized matrix of the input image and apply the ReLu activation function.
 	// This transforms the 3D image into a 2D matrix.
 	std::vector<double> flattened_pool;
-	Matrix2D<double> pooled;
 	if (!input.processed) {
 		Matrix2D<double> convolved = input.normalize(0.5, 0.5).convolve(this->kernel);
 
 		// Take the max pooling of the convolved image.
-		pooled = convolved.max_pooling(this->pool_window);
+		Matrix2D<double> pooled = convolved.max_pooling(this->pool_window);
 		flattened_pool = pooled.flatten_to_vector(0);
 	}
 	else {
@@ -165,13 +163,12 @@ void CNN::back_propagate(std::vector<double> &dZ2,
 						 Image &input, double (*active_fn_der)(double), double learning_rate) {
 
 	std::vector<double> X;
-	Matrix2D<double> pooled;
 	if (!input.processed) {
 		Matrix2D<double> convolved = input.normalize(0.5, 0.5).convolve(this->kernel);
 
 		// Take the max pooling of the convolved image.
-		pooled = convolved.max_pooling(this->pool_window);
-		std::vector<double> X = pooled.flatten_to_vector(0);
+		Matrix2D<double> pooled = convolved.max_pooling(this->pool_window);
+		X = pooled.flatten_to_vector(0);
 	}
 	else {
 		X = input.preprocessed_data;
