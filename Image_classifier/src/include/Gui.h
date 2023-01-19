@@ -3,6 +3,7 @@
 
 #if defined(__APPLE__)
 #define GLFW_INCLUDE_GLCOREARB
+#define GL_SILENCE_DEPRECATION
 #endif
 
 #include <stdio.h>
