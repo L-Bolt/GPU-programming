@@ -6,7 +6,9 @@
 #include <iostream>
 #include <fstream>
 #include <OpenCL/OpenCL.hpp>
-#include <include/Image.h>
+
+#include "Image.h"
+#include "Cnn.h"
 
 class Gpu {
     public:

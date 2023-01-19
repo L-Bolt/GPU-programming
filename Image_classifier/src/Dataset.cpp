@@ -107,8 +107,8 @@ std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffe
  * @param index The index of the image in the buffer.
  * @return std::vector<uint8_t>& Reference to the data of the image.
  */
-Image &Dataset::get_image(int index) {
-    return this->image_buffer.at(index);
+Image* Dataset::get_image(int index) {
+    return &this->image_buffer.at(index);
 }
 
 /**
@@ -137,9 +137,9 @@ void Dataset::write_images_to_disk() {
             std::string image_name = std::to_string(j);
             std::string path = folder + '/' + image_name + ".jpg";
 
-            Image img = get_image(i * CIFAR_IMAGES_PER_FILE + j);
+            Image *img = get_image(i * CIFAR_IMAGES_PER_FILE + j);
             std::cout << "saving image: " << (j + (CIFAR_IMAGES_PER_FILE * (i)) + 1) <<std::endl;
-            img.save_image(path);
+            img->save_image(path);
         }
     }
 }

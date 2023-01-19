@@ -27,7 +27,7 @@ class Dataset {
 
         void display_all_images();
         void write_images_to_disk();
-        Image &get_image(int index);
+        Image *get_image(int index);
 
         std::vector<Image> *get_training_set() {return &training_set;};
         std::vector<Image> *get_test_set() {return &test_set;};
@@ -35,6 +35,8 @@ class Dataset {
         std::vector<std::vector<double>> labels;
         std::vector<std::vector<double>> test_labels;
         std::vector<std::vector<uint8_t>>* get_buffer() {return &buffer;};
+
+        std::string get_class(int label) const {return classes[label];};
 
     private:
         std::vector<std::vector<uint8_t>> buffer;

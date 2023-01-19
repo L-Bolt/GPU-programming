@@ -27,11 +27,10 @@ class Image {
         Matrix3D<uint8_t> matrix;
         std::vector<double> preprocessed_data;
         bool processed = false;
+        cv::Mat array_to_cv_mat();
 
     private:
         uint8_t classifier;
-
-        cv::Mat array_to_cv_mat();
 
 };
 

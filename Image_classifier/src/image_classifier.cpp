@@ -21,8 +21,9 @@ int main() {
         gui.run();
     }
     else {
+        std::cout << "Training model with 12 epochs..." << std::endl;
         cnn.train(*dataset.get_training_set(), dataset.labels, 0.001, 12);
-        std::cout << "validating: " << std::endl;
+        std::cout << "validating model..." << std::endl;
         cnn.validate(*dataset.get_test_set(), dataset.test_labels);
     }
 }
