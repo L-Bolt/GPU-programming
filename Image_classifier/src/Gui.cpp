@@ -1,5 +1,6 @@
 #include "include/Gui.h"
 
+
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -36,7 +37,7 @@ static GLuint matToTexture(const cv::Mat& mat, GLenum minFilter, GLenum magFilte
 	// GL_BGR       for CV_CAP_OPENNI_BGR_IMAGE,
 	// GL_LUMINANCE for CV_CAP_OPENNI_DISPARITY_MAP,
 	// Work out other mappings as required ( there's a list in comments in main() )
-	GLenum inputColourFormat = GL_BGR;
+	GLenum inputColourFormat = 0x80E0;
 	// if (mat.channels() == 1)
 	// {
 	// 	inputColourFormat = GL_LUMINANCE;
