@@ -63,7 +63,7 @@ class Gui {
         bool join_train_thread = false;
         bool join_validate_thread = false;
         int run_epochs = 1;
-        int image_counter = 0;
+        int image_counter = 50000;
         float scale = 5.0;
 };
 
