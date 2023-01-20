@@ -21,6 +21,7 @@ class CNN {
         int images_correct() {return correctly_classified;};
         void quit() {stop = true;};
         float get_training_percentage();
+        int classify (Image &input);
 
     private:
         void forward_propagate(Image &input, std::vector<std::vector<double>> &a, std::vector<std::vector<double>> &z);

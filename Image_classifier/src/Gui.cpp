@@ -54,7 +54,7 @@ static GLuint matToTexture(const cv::Mat& mat, GLenum minFilter, GLenum magFilte
 		GL_UNSIGNED_BYTE,  // Image data type
 		mat.ptr());        // The actual image data itself
 
-// If we're using mipmaps then generate them. Note: This requires OpenGL 3.0 or higher
+    // If we're using mipmaps then generate them. Note: This requires OpenGL 3.0 or higher
 	if (minFilter == GL_LINEAR_MIPMAP_LINEAR ||
 		minFilter == GL_LINEAR_MIPMAP_NEAREST ||
 		minFilter == GL_NEAREST_MIPMAP_LINEAR ||
@@ -256,16 +256,28 @@ void Gui::update() {
         std::string label = this->dataset->get_class(im->get_class());
         const cv::Mat image = im->array_to_cv_mat();
         GLuint image_texture = matToTexture(image, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, 1);
+
         ImGui::Begin("Image preview");
-        float ims = 5;
+        float ims = this->scale;
         ImVec2 imageSize = ImVec2(ims * image.size().width, ims * image.size().height);
+
         ImGui::Text("texture size = %.0f x %.0f", imageSize.x, imageSize.y);
         ImGui::Text("image size = %d x %d", image.size().width, image.size().height);
+        ImGui::SliderFloat("Scale", &this->scale, 1.0, 10.0f);
         ImGui::Image((void*)(intptr_t)image_texture, imageSize);
         ImGui::Text("Image class: %s", label.c_str());
+
+        if (this->cnn->is_trained()) {
+            ImGui::Text("Network thinks: %s", this->dataset->get_class(this->cnn->classify(*im)).c_str());
+        }
+        else {
+            ImGui::Text("Train the network to see the network's classification");
+        }
+
         if (ImGui::Button("Next")) {
             this->image_counter++;
         }
+
         ImGui::End();
     }
 }

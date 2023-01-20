@@ -149,6 +149,15 @@ void CNN::forward_propagate(Image &input, std::vector<std::vector<double>> &a, s
 	z.push_back(Z2);
 }
 
+int CNN::classify(Image &input) {
+	std::vector<std::vector<double>> a;
+	std::vector<std::vector<double>> z;
+
+	forward_propagate(input, a, z);
+
+	return np::get_max_class(a.at(1));
+}
+
 /*
  * Compute deltas of each layer and return the same.
  * delta_L: delta of the final layer, computed and passed as argument
