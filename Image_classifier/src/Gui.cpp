@@ -186,11 +186,11 @@ Gui::~Gui() {
 }
 
 void Gui::validate_cnn(CNN *cnn, Dataset *dataset) {
-    cnn->validate(*dataset->get_test_set(), dataset->test_labels);
+    cnn->validate(*dataset->get_test_set(), *dataset->get_test_labels());
 }
 
 void Gui::train_cnn(CNN *cnn, Dataset *dataset, int epochs) {
-    cnn->train(*dataset->get_training_set(), dataset->labels, 0.001, epochs);
+    cnn->train(*dataset->get_training_set(), *dataset->get_training_labels(), 0.001, epochs);
 }
 
 void Gui::update() {
@@ -271,11 +271,13 @@ void Gui::update() {
             ImGui::Text("Network thinks: %s", this->dataset->get_class(this->cnn->classify(*im)).c_str());
         }
         else {
-            ImGui::Text("Train the network to see the network's classification");
+            ImGui::Text("Train the network to see \nthe network's classification");
         }
 
         if (ImGui::Button("Next")) {
-            this->image_counter++;
+            if (this->image_counter < this->dataset->get_buffer()->size()) {
+                this->image_counter++;
+            }
         }
 
         ImGui::End();

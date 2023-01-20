@@ -31,14 +31,16 @@ class Dataset {
 
         std::vector<Image> *get_training_set() {return &training_set;};
         std::vector<Image> *get_test_set() {return &test_set;};
+        std::vector<std::vector<double>> *get_training_labels() {return &labels;};
+        std::vector<std::vector<double>> *get_test_labels() {return &test_labels;};
 
-        std::vector<std::vector<double>> labels;
-        std::vector<std::vector<double>> test_labels;
         std::vector<std::vector<uint8_t>>* get_buffer() {return &buffer;};
 
         std::string get_class(int label) const {return classes[label];};
 
     private:
+        std::vector<std::vector<double>> labels;
+        std::vector<std::vector<double>> test_labels;
         std::vector<std::vector<uint8_t>> buffer;
         std::vector<Image> image_buffer;
 
