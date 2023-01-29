@@ -26,9 +26,9 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
 }
 
 std::vector<std::vector<double>> forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *a, std::vector<std::vector<double>> *z) {
-    std::vector<std::vector<double>> a;
+    std::vector<std::vector<double>> x;
 
-    return a;
+    return x;
 }
 
 std::vector<Matrix2D<double>> Gpu::preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, int rows, int cols, int channels, Shape &pooling_window, double bias) {
