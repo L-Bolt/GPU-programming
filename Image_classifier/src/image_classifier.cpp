@@ -12,7 +12,7 @@ int main() {
 	Shape pool_size={2, 2};
     Matrix3D<double> conv_kernel = Matrix3D<double>(kernel_dim.rows, kernel_dim.columns, 3, true);
 
-    Gpu gpu(std::vector<std::string>{"../src/kernels/preprocess.cl"});
+    Gpu gpu(std::vector<std::string>{"../src/kernels/preprocess.cl", "../src/kernels/forward.cl"});
     Dataset dataset("../dataset/cifar-10-batches-bin", gpu, conv_kernel, pool_size);
     CNN cnn(input_dim, kernel_dim, pool_size, 196, 10, conv_kernel);
     Gui gui("Image Classifier", &cnn, &dataset);
