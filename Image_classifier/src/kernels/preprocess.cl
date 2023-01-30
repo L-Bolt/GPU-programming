@@ -3,7 +3,7 @@ __kernel void normalization(__global unsigned char* restrict images,
                             const int rows,
                             const int cols,
                             const int channels,
-                            const int size) {  
+                            const int size) {
     int id = (get_global_id(2) * get_global_size(0) * get_global_size(1)) + (get_global_id(0) * get_global_size(0)) + get_global_id(1);
     for (int i = 0; i < size; i++) {
         double value = ((double) images[(i*rows*cols*channels)+(id+1)] / (double) 255);

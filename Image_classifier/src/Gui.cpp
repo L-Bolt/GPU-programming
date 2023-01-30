@@ -275,7 +275,7 @@ void Gui::update() {
         }
 
         if (ImGui::Button("Next")) {
-            if (this->image_counter < this->dataset->get_buffer()->size()) {
+            if (this->image_counter < (int) this->dataset->get_buffer()->size()) {
                 this->image_counter++;
             }
         }

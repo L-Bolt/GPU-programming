@@ -306,13 +306,13 @@ void Matrix2D<T>::reshape(int rows, int columns) {
 template<typename T>
 std::vector<T> Matrix2D<T>::dot(std::vector<T> &v, int slice) {
 		assert(this->columns == (int) v.size() - slice);
-		std::vector<double> vr;
+		std::vector<double> vr(this->rows);
 		for (int i=0; i < this->rows; i++){
 			double w = 0;
-			for( int j=0; j < this->columns - slice; j++){
+			for (int j=0; j < this->columns - slice; j++){
 				w += (this->get(i,j) * v.at(j));
 			}
-			vr.push_back(w);
+            vr.at(i) = w;
 		}
 		return vr;
 }
