@@ -120,6 +120,7 @@ void CNN::forward_propagate(Image &input, std::vector<std::vector<double>> &a, s
 		flattened_pool = input.preprocessed_data;
 	}
 
+	// Input -> hidden
 	std::vector<double> Z1 = this->weights.at(0).transpose().dot(flattened_pool);
 	assert((int)Z1.size() == this->biases.at(0).get_rows());
 	for (size_t i = 0; i < Z1.size(); i++) {
@@ -128,6 +129,8 @@ void CNN::forward_propagate(Image &input, std::vector<std::vector<double>> &a, s
 
 	std::vector<double> A1 = np::applyFunction(Z1, fns::relu);
 
+
+	// Hidden -> output
 	std::vector<double> Z2 = this->weights.at(1).transpose().dot(A1);
 	assert((int)Z2.size() == this->biases.at(1).get_rows());
 	for (size_t i = 0; i < Z2.size(); i++) {

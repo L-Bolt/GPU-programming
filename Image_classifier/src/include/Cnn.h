@@ -23,6 +23,9 @@ class CNN {
         float get_training_percentage();
         int classify (Image &input);
 
+        std::vector<Matrix2D<double>> weights;
+        std::vector<Matrix2D<double>> biases;
+
     private:
         void forward_propagate(Image &input, std::vector<std::vector<double>> &a, std::vector<std::vector<double>> &z);
         void back_propagate(std::vector<double> &dZ2,
@@ -32,8 +35,8 @@ class CNN {
 
         double cross_entropy(std::vector<double> &ypred, std::vector<double> &ytrue);
 
-        std::vector<Matrix2D<double>> weights;
-        std::vector<Matrix2D<double>> biases;
+        // std::vector<Matrix2D<double>> weights;
+        // std::vector<Matrix2D<double>> biases;
         Matrix3D<double> kernel;
         Shape pool_window;
         std::atomic<float> iteration = 0.0;

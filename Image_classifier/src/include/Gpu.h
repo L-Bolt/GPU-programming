@@ -22,7 +22,7 @@ class Gpu {
         std::vector<double> convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels, int size);
         std::vector<Matrix2D<double>> max_pooling(std::vector<double> input, int size, int rows, int cols, Shape &pooling_window);
         std::vector<Matrix2D<double>> preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, int rows, int cols, int channels, Shape &pooling_window, double bias=1.0);
-        std::vector<std::vector<double>> forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *a, std::vector<std::vector<double>> *z);
+        void forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *a, std::vector<std::vector<double>> *z, Matrix2D<double> *weights0, Matrix2D<double> *weights1, Matrix2D<double> *bias0, Matrix2D<double> *bias1);
 
     private:
         std::vector<std::string> source_paths;

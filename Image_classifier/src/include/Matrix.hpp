@@ -32,6 +32,7 @@ class Matrix2D {
         Matrix2D<double> max_pooling(Shape &pooling_window);
         std::vector<T> dot(std::vector<T> &v, int slice=0);
         Matrix2D<T> dot(Matrix2D<T>& m2);
+        std::vector<T> *data() {return &array;};
         T element_sum();
 
         void flatten() {rows = 1; columns = array.size();};
@@ -306,13 +307,13 @@ void Matrix2D<T>::reshape(int rows, int columns) {
 template<typename T>
 std::vector<T> Matrix2D<T>::dot(std::vector<T> &v, int slice) {
 		assert(this->columns == (int) v.size() - slice);
-		std::vector<double> vr;
-		for (int i=0; i < this->rows; i++){
+		std::vector<double> vr(this->rows);
+		for (int i = 0; i < this->rows; i++){
 			double w = 0;
-			for( int j=0; j < this->columns - slice; j++){
+			for (int j=0; j < this->columns - slice; j++){
 				w += (this->get(i,j) * v.at(j));
 			}
-			vr.push_back(w);
+            vr.at(i) = w;
 		}
 		return vr;
 }
