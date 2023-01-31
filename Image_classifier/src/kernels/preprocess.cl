@@ -21,21 +21,19 @@ __kernel void convolve(__global double* restrict image,
                        const int im_channels,
                        const int out_cols,
                        const int out_rows,
-                       const double bias,
-                       const int size) {
-    for (int q = 0; q < size; q++) {
-        int i = get_global_id(0);
-        int j = get_global_id(1);
-        double value = 0.0;
-        for (int h = i; h < i + ker_rows; h++) {
-            for (int w = j; w < j + ker_cols; w++) {
-                for (int channel = 0; channel < im_channels; channel++) {
-                    value += _kernel[(channel * ker_rows * ker_cols) + ((h - i) * ker_rows) + (w - j)] * image[((im_rows * im_cols * im_channels + 1) * q) + (channel * im_rows * im_cols) + (h * im_rows) + w];
-                }
+                       const double bias) {
+    int i = get_global_id(0);
+    int j = get_global_id(1);
+    int q = get_global_id(2);
+    double value = 0.0;
+    for (int h = i; h < i + ker_rows; h++) {
+        for (int w = j; w < j + ker_cols; w++) {
+            for (int channel = 0; channel < im_channels; channel++) {
+                value += _kernel[(channel * ker_rows * ker_cols) + ((h - i) * ker_rows) + (w - j)] * image[((im_rows * im_cols * im_channels + 1) * q) + (channel * im_rows * im_cols) + (h * im_rows) + w];
             }
         }
-        output[(out_cols * out_rows * q) + (i * out_cols + j)] = value + bias;
     }
+    output[(out_cols * out_rows * q) + (i * out_cols + j)] = value + bias;
 }
 
 // Door ongelijke incremention van de index in de originele functie (wat uiteraard niet door opencl
@@ -51,18 +49,16 @@ __kernel void max_pool(__global double* restrict image,
                        const int out_cols,
                        const int pl_rows,
                        const int pl_cols,
-                       const double dbl_max,
-                       const int size) {
-    for (int q = 0; q < size; q++) {
-        int i = get_global_id(0);
-        int j = get_global_id(1);
-        double max = -dbl_max;
-        for (int x = i * pl_rows; x < (i * pl_rows) + pl_rows; x++) {
-            for (int y = j * pl_cols; y < (j * pl_cols) + pl_cols; y++) {
-                double val_at_index = image[(rows * cols * q) + (x * cols + y)];
-                max = val_at_index > max ? val_at_index : max;
-            }
+                       const double dbl_max) {
+    int i = get_global_id(0);
+    int j = get_global_id(1);
+    int q = get_global_id(2);
+    double max = -dbl_max;
+    for (int x = i * pl_rows; x < (i * pl_rows) + pl_rows; x++) {
+        for (int y = j * pl_cols; y < (j * pl_cols) + pl_cols; y++) {
+            double val_at_index = image[(rows * cols * q) + (x * cols + y)];
+            max = val_at_index > max ? val_at_index : max;
         }
-        output[(out_cols * out_rows * q) + (i * out_cols + j)] = max;
     }
+    output[(out_cols * out_rows * q) + (i * out_cols + j)] = max;
 }

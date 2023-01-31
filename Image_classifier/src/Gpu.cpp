@@ -77,8 +77,7 @@ std::vector<double> Gpu::convolute(std::vector<double> input, Matrix3D<double> c
     kernel.setArg(8, out_cols);
     kernel.setArg(9, out_rows);
     kernel.setArg(10, bias);
-    kernel.setArg(11, size);
-    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(out_rows, out_cols));
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(out_rows, out_cols, size));
     queue.enqueueReadBuffer(memBuf3, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
     return output;
 }
@@ -101,8 +100,7 @@ std::vector<Matrix2D<double>> Gpu::max_pooling(std::vector<double> input, int si
     kernel.setArg(6, pooling_window.rows);
     kernel.setArg(7, pooling_window.columns);
     kernel.setArg(8, DBL_MAX);
-    kernel.setArg(9, size);
-    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(rows/pooling_window.rows, cols/pooling_window.columns));
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(rows/pooling_window.rows, cols/pooling_window.columns, size));
     queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
     std::vector<Matrix2D<double>> result(size, Matrix2D<double>(out_rows, out_cols));
     for (int i = 0; i < size; i++) {
