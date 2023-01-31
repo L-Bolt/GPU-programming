@@ -25,7 +25,7 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *a, std::vector<std::vector<double>> *z, Matrix2D<double> *weights0, Matrix2D<double> *weights1, Matrix2D<double> *bias0, Matrix2D<double> *bias1) {
+void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *a1, std::vector<std::vector<double>> *a2, std::vector<std::vector<double>> *z1, Matrix2D<double> *weights0, Matrix2D<double> *weights1, Matrix2D<double> *bias0, Matrix2D<double> *bias1) {
     std::vector<double> d_input1(input->size() * input->at(0).preprocessed_data.size());
     std::vector<double> d_outputA1(input->size() * 196);
     std::vector<double> d_outputZ1(input->size() * 196);
@@ -39,13 +39,15 @@ void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double
         }
     }
 
-    std::vector<double> *weights_transposed = weights0->transpose().data();
+    Matrix2D<double> weights_transposed = weights0->transpose();
 
-    cl::Buffer input_buffer1(context, CL_MEM_READ_ONLY, sizeof(double) * d_input1.size(), d_input1.data());
-    cl::Buffer weights0_buffer(context, CL_MEM_READ_ONLY, sizeof(double) * weights0->get_columns() * weights0->get_rows(), weights_transposed->data());
-    cl::Buffer biases0_buffer(context, CL_MEM_READ_ONLY, sizeof(double) * bias0->get_columns() * bias0->get_rows(), bias0->data()->data());
-    cl::Buffer output_bufferA1(context, CL_MEM_WRITE_ONLY, sizeof(double) * d_outputA1.size(), NULL);
-    cl::Buffer output_bufferZ1(context, CL_MEM_WRITE_ONLY, sizeof(double) * d_outputZ1.size(), NULL);
+    cl::Buffer input_buffer1(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * d_input1.size(), d_input1.data());
+    cl::Buffer weights0_buffer(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * weights0->get_columns() * weights0->get_rows(), weights_transposed.data()->data());
+    cl::Buffer biases0_buffer(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * bias0->get_columns() * bias0->get_rows(), bias0->data()->data());
+    cl::Buffer output_bufferA1(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * d_outputA1.size(), d_outputA1.data());
+    cl::Buffer output_bufferZ1(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * d_outputZ1.size(), d_outputZ1.data());
+    cl::Buffer output_bufferA2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * d_outputA2.size(), d_outputA2.data());
+    cl::Buffer output_bufferZ2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * d_outputZ2.size(), d_outputZ2.data());
 
     cl::Kernel kernel(program, "forward_pass", nullptr);
     cl::CommandQueue queue(context, device);
@@ -57,13 +59,46 @@ void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double
     kernel.setArg(4, biases0_buffer);
     kernel.setArg(5, (int) input->size());
     kernel.setArg(6, 196);
-    kernel.setArg(7, 196);
-    kernel.setArg(8, 0);
+    kernel.setArg(7, 0);
 
     queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(196));
     queue.finish();
-    queue.enqueueReadBuffer(output_bufferA1, CL_TRUE, 0, sizeof(double) * a->at(0).size(), a->at(0).data());
-    queue.enqueueReadBuffer(output_bufferZ1, CL_TRUE, 0, sizeof(double) * z->at(0).size(), z->at(0).data());
+    queue.enqueueReadBuffer(output_bufferA1, CL_TRUE, 0, sizeof(double) * d_outputA1.size(), d_outputA1.data());
+    queue.enqueueReadBuffer(output_bufferZ1, CL_TRUE, 0, sizeof(double) * d_outputZ1.size(), d_outputZ1.data());
+
+    Matrix2D<double> weights_transposed2 = weights1->transpose();
+
+    cl::Buffer input_buffer2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * d_outputA1.size(), d_outputA1.data());
+    cl::Buffer weights1_buffer(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * weights1->get_columns() * weights1->get_rows(), weights_transposed2.data()->data());
+    cl::Buffer biases1_buffer(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * bias1->get_columns() * bias1->get_rows(), bias1->data()->data());
+
+    cl::Kernel kernel2(program, "forward_pass", nullptr);
+    cl::CommandQueue queue2(context, device);
+
+    kernel2.setArg(0, input_buffer2);
+    kernel2.setArg(1, output_bufferA2);
+    kernel2.setArg(2, output_bufferZ2);
+    kernel2.setArg(3, weights1_buffer);
+    kernel2.setArg(4, biases1_buffer);
+    kernel2.setArg(5, (int) input->size());
+    kernel2.setArg(6, 10);
+    kernel2.setArg(7, 1);
+
+    queue2.enqueueNDRangeKernel(kernel2, cl::NullRange, cl::NDRange(10));
+    queue2.finish();
+
+    // na de eerste epoch wordt dit allemaal inf.
+    queue2.enqueueReadBuffer(output_bufferA2, CL_TRUE, 0, sizeof(double) * d_outputA2.size(), d_outputA2.data());
+    queue2.enqueueReadBuffer(output_bufferZ2, CL_TRUE, 0, sizeof(double) * d_outputZ2.size(), d_outputZ2.data());
+
+    *a1 = util::split_vector(d_outputA1, input->size());
+
+    *a2 = util::split_vector(d_outputA2, input->size());
+    for (int i = 0; i < a2->size(); i++) {
+        a2->at(i) = np::normalize(a2->at(i));
+    }
+
+    *z1 = util::split_vector(d_outputZ1, input->size());
 }
 
 std::vector<Matrix2D<double>> Gpu::preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, int rows, int cols, int channels, Shape &pooling_window, double bias) {

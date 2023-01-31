@@ -5,7 +5,14 @@ double relu(double x) {
     return 0.0;
 }
 
-__kernel void forward_pass(__global double* restrict d_input, __global double* restrict d_outputA, __global double* restrict d_outputZ, __global double* weights, __global double* biases, int images, int z_rows, int z_columns, int layer) {
+double softmax(double x){
+    if (isnan(x)) {
+        return 0;
+    }
+    return exp(x);
+}
+
+__kernel void forward_pass(__global double* d_input, __global double* d_outputA, __global double* d_outputZ, __global double* weights, __global double* biases, int images, int z_rows, int layer) {
     for (int img = 0; img < images; img++) {
         int i = get_global_id(0);
         double value = 0.0;
@@ -14,12 +21,13 @@ __kernel void forward_pass(__global double* restrict d_input, __global double* r
         }
 
         value += biases[i];
-        d_outputZ[0] = 0.1;
+        d_outputZ[img * z_rows + i] = value;
 
-        printf("%d, %d\n", img, i);
-
-        // if (layer == 0) {
-        //     d_outputA[image * z_rows + i] = relu(value);
-        // }
+        if (layer == 0) {
+            d_outputA[img * z_rows + i] = relu(value);
+        }
+        else if (layer == 1) {
+            d_outputA[img * z_rows + i] = softmax(value);
+        }
     }
 }
