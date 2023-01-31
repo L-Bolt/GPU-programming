@@ -14,6 +14,7 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
         this->device = get_default_device();
         this->context = make_context();
         this->program = make_program();
+        build_program();
 
         std::cout << "Using platform '" << platform.getInfo<CL_PLATFORM_NAME>() << "' from '" << platform.getInfo<CL_PLATFORM_VENDOR>() << "'" << std::endl;
         std::cout << "Using GPU '" << device.getInfo<CL_DEVICE_NAME>() << "'\n" << std::endl;
@@ -36,7 +37,7 @@ std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>>* imag
     for (auto const &v: *images) {
         flattened.insert(flattened.end(), v.begin(), v.end());
     }
-    build_program();
+
     cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned char) * flattened.size(), flattened.data());
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.size(), output.data());
     cl::Kernel kernel(program, "normalization", nullptr);
@@ -58,7 +59,7 @@ std::vector<double> Gpu::convolute(std::vector<double> input, Matrix3D<double> c
     int out_rows = (rows - conv_kernel.get_rows() + 1);
     int out_cols = (cols - conv_kernel.get_columns() + 1);
     std::vector<double> output = std::vector<double>(out_rows * out_cols * size);
-    build_program();
+
     cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * input.size(), input.data());
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * conv_kernel.array.size(), conv_kernel.array.data());
     cl::Buffer memBuf3(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.size(), output.data());
@@ -86,7 +87,7 @@ std::vector<Matrix2D<double>> Gpu::max_pooling(std::vector<double> input, int si
     int out_rows = (rows / pooling_window.rows);
     int out_cols = (cols / pooling_window.columns);
     std::vector<double> output(size * (out_rows * out_cols));
-    build_program();
+
     cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * input.size(), input.data());
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * output.size(), output.data());
     cl::Kernel kernel(program, "max_pool", nullptr);
