@@ -36,11 +36,6 @@ __kernel void convolve(__global double* restrict image,
     output[(out_cols * out_rows * q) + (i * out_cols + j)] = value + bias;
 }
 
-// Door ongelijke incremention van de index in de originele functie (wat uiteraard niet door opencl
-// supported is) moest de index gedeeld worden door de incremention value, en later hier in de kernel
-// weer vermenigvuldigd worden met de incremention value :). Vandaar dat i en j vermenigvuldigd worden
-// met de pooling windows dimensies.
-
 __kernel void max_pool(__global double* restrict image,
                        __global double* restrict output,
                        const int rows,
@@ -61,4 +56,35 @@ __kernel void max_pool(__global double* restrict image,
         }
     }
     output[(out_cols * out_rows * q) + (i * out_cols + j)] = max;
+}
+
+double relu(double x) {
+    if (x > 0.0) {
+        return x;
+    }
+    return 0.0;
+}
+
+double softmax(double x){
+    if (isnan(x)) {
+        return 0.0;
+    }
+    return (double) exp(x);
+}
+
+__kernel void forward_pass(__global double* restrict biases,
+                           __global double* restrict Z1,
+                           __global double* restrict A1,
+                           const int bias_cols,
+                           const int Z1_size,
+                           const int func_selector) {
+    int i = get_global_id(0);
+    int j = get_global_id(1);
+    Z1[j + (i * Z1_size)] = Z1[j + (i * Z1_size)] + biases[j * bias_cols];
+    if (func_selector == 0) {
+        A1[j + (i * Z1_size)] = relu(Z1[j + (i * Z1_size)]);
+    } else {
+        A1[j + (i * Z1_size)] = softmax(Z1[j + (i * Z1_size)]);
+        A1[j + (i * Z1_size)] = isnan(A1[j + (i * Z1_size)]) ? 1.0 : A1[j + (i * Z1_size)];
+    }
 }

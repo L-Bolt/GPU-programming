@@ -1,6 +1,6 @@
 #include "include/Cnn.h"
 
-CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel) {
+CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel, Gpu &gpu) {
 	assert(input_dim.rows > kernel_size.rows && input_dim.columns > kernel_size.columns);
 	assert(input_dim.rows - kernel_size.rows + 1 > pool_size.rows && input_dim.columns - kernel_size.columns + 1 > pool_size.columns);
 
@@ -21,6 +21,8 @@ CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer
 	Matrix2D<double> Bias1(output_dim, 1, true);
 	this->biases.push_back(Bias0);
 	this->biases.push_back(Bias1);
+
+	this->gpu = gpu;
 }
 
 float CNN::get_training_percentage() {
@@ -41,6 +43,21 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 		double error = 0.0;
 
 		std::cout << "Running epoch: " << epoch << std::endl;
+		std::vector<std::vector<double>> a;
+		std::vector<std::vector<double>> z;
+
+		std::vector<std::vector<double>> test_a;
+		std::vector<std::vector<double>> test_z;
+		
+		gpu.forward_prop(&Xtrain, &a, &z, &weights.at(0), &weights.at(1), &biases.at(0), &biases.at(1));
+		forward_propagate(Xtrain[1], test_a, test_z);
+		for (size_t i = 0; i < z.at(2).size(); i++) {
+			std::cout << (double) z.at(2).at(i) << std::endl;
+		}
+		std::cout << "\n\n\n" << std::endl;
+		for (size_t i = 0; i < test_z.at(0).size(); i++) {
+			std::cout << (double) test_z.at(0).at(i) << std::endl;
+		}
 		for (size_t it = 0; it < Xtrain.size(); it++) {
 			this->iteration = this->iteration + 1;
 
@@ -49,14 +66,9 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 				return;
 			}
 
-			std::vector<std::vector<double>> a;
-			std::vector<std::vector<double>> z;
-
-			forward_propagate(Xtrain[it], a, z);
-
-			error += cross_entropy(a.at(1), Ytrain[it]);
-			std::vector<double> dZ2 = np::subtract(a.at(1), Ytrain[it]);
-			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate);
+			error += cross_entropy(a.at(1 + (2*it)), Ytrain[it]);
+			std::vector<double> dZ2 = np::subtract(a.at(1 + (2*it)), Ytrain[it]);
+			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate, it);
 
 		}
 		this->epoch = this->epoch + 1.0;
@@ -169,7 +181,8 @@ int CNN::classify(Image &input) {
 void CNN::back_propagate(std::vector<double> &dZ2,
 						 std::vector<std::vector<double>> &a,
 						 std::vector<std::vector<double>> &z,
-						 Image &input, double (*active_fn_der)(double), double learning_rate) {
+						 Image &input, double (*active_fn_der)(double), double learning_rate,
+						 size_t it) {
 
 	std::vector<double> X;
 	if (!input.processed) {
@@ -184,7 +197,7 @@ void CNN::back_propagate(std::vector<double> &dZ2,
 	}
 
 	Matrix2D<double> dz2_mat(this->output_dim, 1, dZ2);
-	Matrix2D<double> a1_mat(1, this->hidden_layer_nodes, a.at(0));
+	Matrix2D<double> a1_mat(1, this->hidden_layer_nodes, a.at(0 + (2*it)));
 	Matrix2D<double> dW2 = dz2_mat.dot(a1_mat);
 
 	double db2 = 0.0;
@@ -195,7 +208,7 @@ void CNN::back_propagate(std::vector<double> &dZ2,
 	db2 *= learning_rate;
 
 	std::vector<double> dZ1 = this->weights.at(1).dot(dZ2);
-	std::vector<double> dz_deriv = np::applyFunction(z.at(0), active_fn_der);
+	std::vector<double> dz_deriv = np::applyFunction(z.at(0 + (2*it)), active_fn_der);
 	dZ1 = np::multiply(dZ1, dz_deriv);
 
 	Matrix2D<double> dz1_mat(dZ1.size(), 1, dZ1);

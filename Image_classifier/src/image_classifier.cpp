@@ -14,7 +14,7 @@ int main() {
 
     Gpu gpu(std::vector<std::string>{"../src/kernels/preprocess.cl"});
     Dataset dataset("../dataset/cifar-10-batches-bin", gpu, conv_kernel, pool_size);
-    CNN cnn(input_dim, kernel_dim, pool_size, 196, 10, conv_kernel);
+    CNN cnn(input_dim, kernel_dim, pool_size, 196, 10, conv_kernel, gpu);
     Gui gui("Image Classifier", &cnn, &dataset);
 
     if (gui.is_enabled()) {
