@@ -35,9 +35,6 @@ cv::Mat Image::array_to_cv_mat() {
     cv::Mat mat(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CV_8UC3);
 
     // Copy the data from the image buffer into the cv::mat matrix.
-    // TODO dit is kaulo aids, miss kan t met iterators. maar cv mat is sws aids.
-    // Ook fking inefficient omdat t alles kopieert. Maar dat moet vgm omdat een cv::mat anders random data heeft.
-    // Deze comment boeit eigenlijk niet omdat we cv mats wss alleen gaan gebruiken bij t displayen van een image.
     for (int i = 0; i < CIFAR_IMAGE_SIZE; i++) {
         for (int j = 0; j < CIFAR_IMAGE_SIZE; j++) {
             for (int k = 0; k < CIFAR_IMAGE_COLOR_CHANNELS; k++) {

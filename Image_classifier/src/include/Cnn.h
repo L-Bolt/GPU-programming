@@ -29,7 +29,7 @@ class CNN {
         void back_propagate(std::vector<double> &dZ2,
                             std::vector<std::vector<double>> &a,
                             std::vector<std::vector<double>> &z,
-                            Image &input, double (*active_fn_der)(double), double learning_rate, size_t it);
+                            Image &input, double (*active_fn_der)(double), double learning_rate);
 
         double cross_entropy(std::vector<double> &ypred, std::vector<double> &ytrue);
 

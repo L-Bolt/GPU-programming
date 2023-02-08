@@ -38,10 +38,6 @@ static GLuint matToTexture(const cv::Mat& mat, GLenum minFilter, GLenum magFilte
 	// GL_LUMINANCE for CV_CAP_OPENNI_DISPARITY_MAP,
 	// Work out other mappings as required ( there's a list in comments in main() )
 	GLenum inputColourFormat = 0x80E0;
-	// if (mat.channels() == 1)
-	// {
-	// 	inputColourFormat = GL_LUMINANCE;
-	// }
 
 	// Create the texture
 	glTexImage2D(GL_TEXTURE_2D,     // Type of texture

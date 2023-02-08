@@ -43,21 +43,6 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 		double error = 0.0;
 
 		std::cout << "Running epoch: " << epoch << std::endl;
-		std::vector<std::vector<double>> a;
-		std::vector<std::vector<double>> z;
-
-		std::vector<std::vector<double>> test_a;
-		std::vector<std::vector<double>> test_z;
-		
-		gpu.forward_prop(&Xtrain, &a, &z, &weights.at(0), &weights.at(1), &biases.at(0), &biases.at(1));
-		forward_propagate(Xtrain[1], test_a, test_z);
-		for (size_t i = 0; i < z.at(2).size(); i++) {
-			std::cout << (double) z.at(2).at(i) << std::endl;
-		}
-		std::cout << "\n\n\n" << std::endl;
-		for (size_t i = 0; i < test_z.at(0).size(); i++) {
-			std::cout << (double) test_z.at(0).at(i) << std::endl;
-		}
 		for (size_t it = 0; it < Xtrain.size(); it++) {
 			this->iteration = this->iteration + 1;
 
@@ -65,10 +50,13 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 				std::cout << "stopped training" << std::endl;
 				return;
 			}
+			std::vector<std::vector<double>> a;
+			std::vector<std::vector<double>> z;
+			forward_propagate(Xtrain[it], a, z);
 
-			error += cross_entropy(a.at(1 + (2*it)), Ytrain[it]);
-			std::vector<double> dZ2 = np::subtract(a.at(1 + (2*it)), Ytrain[it]);
-			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate, it);
+			error += cross_entropy(a.at(1), Ytrain[it]);
+			std::vector<double> dZ2 = np::subtract(a.at(1), Ytrain[it]);
+			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate);
 
 		}
 		this->epoch = this->epoch + 1.0;
@@ -87,22 +75,22 @@ double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> 
 	this->validated = false;
 
 	double error = 0;
+	std::vector<std::vector<double>> a;
+	std::vector<std::vector<double>> z;
+		
+	gpu.forward_prop(&Xval, &a, &z, &weights.at(0), &weights.at(1), &biases.at(0), &biases.at(1));
 	for (size_t it = 0; it < Xval.size(); it++) {
 		if (this->stop) {
 			return 0.0;
 		}
 
-		std::vector<std::vector<double>> a;
-		std::vector<std::vector<double>> z;
-
-		forward_propagate(Xval[it], a, z);
-		std::vector<double> prediction = a.at(1);
+		std::vector<double> prediction = a.at(1 + (2 * it));
 		int classified = np::get_max_class(prediction);
 		if (classified == Xval[it].get_class()) {
 			this->correctly_classified++;
 		}
 
-		error += cross_entropy(a.at(1), Yval[it]);
+		error += cross_entropy(a.at(1 + (2 * it)), Yval[it]);
 	}
 
 	std::cout << "Images correctly classified: " << this->correctly_classified << '\n';
@@ -181,8 +169,7 @@ int CNN::classify(Image &input) {
 void CNN::back_propagate(std::vector<double> &dZ2,
 						 std::vector<std::vector<double>> &a,
 						 std::vector<std::vector<double>> &z,
-						 Image &input, double (*active_fn_der)(double), double learning_rate,
-						 size_t it) {
+						 Image &input, double (*active_fn_der)(double), double learning_rate) {
 
 	std::vector<double> X;
 	if (!input.processed) {
@@ -197,7 +184,7 @@ void CNN::back_propagate(std::vector<double> &dZ2,
 	}
 
 	Matrix2D<double> dz2_mat(this->output_dim, 1, dZ2);
-	Matrix2D<double> a1_mat(1, this->hidden_layer_nodes, a.at(0 + (2*it)));
+	Matrix2D<double> a1_mat(1, this->hidden_layer_nodes, a.at(0));
 	Matrix2D<double> dW2 = dz2_mat.dot(a1_mat);
 
 	double db2 = 0.0;
@@ -208,7 +195,7 @@ void CNN::back_propagate(std::vector<double> &dZ2,
 	db2 *= learning_rate;
 
 	std::vector<double> dZ1 = this->weights.at(1).dot(dZ2);
-	std::vector<double> dz_deriv = np::applyFunction(z.at(0 + (2*it)), active_fn_der);
+	std::vector<double> dz_deriv = np::applyFunction(z.at(0), active_fn_der);
 	dZ1 = np::multiply(dZ1, dz_deriv);
 
 	Matrix2D<double> dz1_mat(dZ1.size(), 1, dZ1);

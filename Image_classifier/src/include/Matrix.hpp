@@ -137,12 +137,9 @@ Matrix2D<T>::Matrix2D(std::vector<T> &v1, std::vector<T> &v2, int slice) {
 
     for (int i = 0; i < this->rows; i++){
         for (int j = 0; j< this->columns; j++){
-            // this->array.at(i * this->rows + j) = v1.at(i) * v2.at(j);
             this->array.push_back(v1.at(i) * v2.at(j));
         }
     }
-
-    // this->array = data;
 }
 
 template<typename T>
@@ -291,7 +288,6 @@ const std::vector<int> Matrix2D<T>::index_to_coordinate2D(int index) {
     return coordinate;
 }
 
-//TODO: iets beter testen.
 /**
  * Reshapes the matrix.
  */
@@ -527,17 +523,6 @@ Matrix3D<T>::Matrix3D(int rows, int columns, int channels, bool init) {
 }
 
 /**
- * Matrix2D deconstructor. Frees the array pointer if this matrix allocated this
- * pointer itself without getting it passed to it by a parameter.
- */
-// template<typename T>
-// Matrix3D<T>::~Matrix3D() {
-//     if (this->dynamic) {
-//         delete this->array;
-//     }
-// }
-
-/**
  * Sets the value at the coordinate (row, column, channel) to the given value.
  */
 template<typename T>
@@ -561,8 +546,6 @@ int Matrix3D<T>::coordinate_to_index3D(int i, int j, int k) {
     return offset + ((k * this->rows * this->columns) + (i * this->rows) + j);
 }
 
-//TODO: Check of deze functie ook echt werkt. Wss hebben we m niet nodig tho
-// dus check pas wanneer je m gaat gebruiken want is wss fout.
 /**
  * Transforms a 1D array index to a 3D coordinate.
  */
@@ -801,14 +784,12 @@ void Matrix2D<T>::test_matrix2D() {
     std::vector<uint8_t> k = {5, 6, 7, 8};
     std::vector<uint8_t> c = {1, 2, 3, 4, 5, 6, 7, 8};
     std::vector<uint8_t> d = {1, 2, 3, 4, 5, 6, 7, 8};
-    // std::vector<uint8_t> dub = {1, 2, 3, 4, 5, 6, 7, 8};
 
     Matrix2D<uint8_t> matA(4, 1, a);
     Matrix2D<uint8_t> matB(4, 1, b);
     Matrix2D<uint8_t> matK(1, 4, k);
     Matrix2D<uint8_t> matC(4, 2, c);
     Matrix2D<uint8_t> matD(8, 1, d);
-    // Matrix2D<double> dubs(4, 2, d);
 
     std::cout << "resizing matrix" << std::endl;
     matC.print();
@@ -834,9 +815,6 @@ void Matrix2D<T>::test_matrix2D() {
     Matrix2D<uint8_t> mult = matA * matK;
     mult.print();
     std::cout << std::endl;
-    // std::cout << "testing multiplication with constant" << std::endl;
-    // dubs = dubs * 0.1;
-    // dubs.print();
 
     std::cout << "testing flatten" << std::endl;
     mult.flatten();
