@@ -1,6 +1,10 @@
 #include "include/Gpu.h"
 
 
+/**
+ * Constructor for the GPU class. Tries to build the programs given by source_paths,
+ * gets the device and creates a context.
+*/
 Gpu::Gpu(std::vector<std::string> source_paths) {
     this->source_paths = source_paths;
     try {
@@ -19,23 +23,32 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
+/**
+ * Runs the forward pass on the GPU. Creates buffers, copies data to the buffers,
+ * sends the buffers to the GPU and copies the result back.
+*/
 void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *a, std::vector<std::vector<double>> *z, Matrix2D<double> *weights0, Matrix2D<double> *weights1, Matrix2D<double> *bias0, Matrix2D<double> *bias1) {
     std::vector<std::vector<double>> flattened_pool(input->size(), std::vector<double>(input->at(1).preprocessed_data.size()));
     for (size_t i = 0; i < input->size(); i++) {
         flattened_pool.at(i) = input->at(i).preprocessed_data;
     }
+
+    // Create vector for the biases of both layers.
     std::vector<double> biases;
     std::vector<double> biases1;
     biases = std::vector<double>(bias0->array.begin(), bias0->array.end());
     biases1 = std::vector<double>(bias1->array.begin(), bias1->array.end());
     std::vector<std::vector<double>> raw_Z1(input->size(), std::vector<double>(weights0->transpose().dot(flattened_pool[0]).size()));
+
     for (size_t j = 0; j < input->size(); j++) {
         raw_Z1.at(j) = weights0->transpose().dot(flattened_pool.at(j));
     }
+
     std::vector<double> Z1;
     for (auto const &v: raw_Z1) {
         Z1.insert(Z1.end(), v.begin(), v.end());
     }
+
     std::vector<double> A1(Z1.size());
     cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * biases.size(), biases.data());
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * Z1.size(), Z1.data());
@@ -52,19 +65,23 @@ void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double
     queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * Z1.size(), Z1.data());
     queue.enqueueReadBuffer(memBuf3, CL_TRUE, 0, sizeof(double) * A1.size(), A1.data());
     std::vector<std::vector<double>> A1_2D(raw_Z1.size(), std::vector<double>(raw_Z1.at(0).size()));
+
     for (size_t k = 0; k < raw_Z1.size(); k++) {
         for (size_t l = 0; l < raw_Z1.at(0).size(); l++) {
             A1_2D.at(k).at(l) = A1.at(l + (k * raw_Z1.at(0).size()));
         }
     }
+
     std::vector<std::vector<double>> raw_Z2(input->size(), std::vector<double>(weights1->transpose().dot(A1_2D[0]).size()));
     for (size_t m = 0; m < input->size(); m++) {
         raw_Z2.at(m) = weights1->transpose().dot(A1_2D.at(m));
     }
+
     std::vector<double> Z2;
     for (auto const &v: raw_Z2) {
         Z2.insert(Z2.end(), v.begin(), v.end());
     }
+
     std::vector<double> A2(Z2.size());
     cl::Buffer memBuf4(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * biases1.size(), biases1.data());
     cl::Buffer memBuf5(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * Z2.size(), Z2.data());
@@ -81,6 +98,7 @@ void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double
     queue2.enqueueReadBuffer(memBuf5, CL_TRUE, 0, sizeof(double) * Z2.size(), Z2.data());
     queue2.enqueueReadBuffer(memBuf6, CL_TRUE, 0, sizeof(double) * A2.size(), A2.data());
     std::vector<std::vector<double>> A2_2D(raw_Z2.size(), std::vector<double>(raw_Z2.at(0).size()));
+
     for (size_t n = 0; n < raw_Z2.size(); n++) {
         for (size_t o = 0; o < raw_Z2.at(0).size(); o++) {
             A2_2D.at(n).at(o) = A2.at(o + (n * raw_Z2.at(0).size()));
@@ -89,6 +107,7 @@ void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double
         a->push_back(A1_2D.at(n));
         a->push_back(A2_2D.at(n));
     }
+
     std::vector<std::vector<double>> Z1_2D(raw_Z1.size(), std::vector<double>(raw_Z1.at(0).size()));
     std::vector<std::vector<double>> Z2_2D(raw_Z2.size(), std::vector<double>(raw_Z2.at(0).size()));
     for (size_t p = 0; p < raw_Z1.size(); p++) {
@@ -103,11 +122,18 @@ void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double
     }
 }
 
+/**
+ * The convolution layer: runs convolution, normalization and max pooling on every image.
+ * Calls all the functions for the convolution layer.
+*/
 std::vector<Matrix2D<double>> Gpu::preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, int rows, int cols, int channels, Shape &pooling_window, double bias) {
     int size = images->size();
     return Gpu::max_pooling(Gpu::convolute(Gpu::normalize(images, rows, cols, channels, size), conv_kernel, bias, rows, cols, channels, size), size, (rows - conv_kernel.get_rows() + 1), (cols - conv_kernel.get_columns() + 1), pooling_window);
 }
 
+/**
+ * Normalizes an image on the GPU.
+*/
 std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>>* images, int rows, int cols, int channels, int size) {
     std::vector<unsigned char> test = images->front();
     std::vector<double> output(images->size() * images->front().size());
@@ -131,6 +157,9 @@ std::vector<double> Gpu::normalize(std::vector<std::vector<unsigned char>>* imag
     return output;
 }
 
+/**
+ * Convolves an image by the conv_kernel on the GPU.
+*/
 std::vector<double> Gpu::convolute(std::vector<double> input, Matrix3D<double> conv_kernel, double bias, int rows, int cols, int channels, int size) {
     int out_rows = (rows - conv_kernel.get_rows() + 1);
     int out_cols = (cols - conv_kernel.get_columns() + 1);
@@ -157,6 +186,9 @@ std::vector<double> Gpu::convolute(std::vector<double> input, Matrix3D<double> c
     return output;
 }
 
+/**
+ * Takes the max_pooling of shape pooling_window on the GPU.
+*/
 std::vector<Matrix2D<double>> Gpu::max_pooling(std::vector<double> input, int size, int rows, int cols, Shape &pooling_window) {
     int out_rows = (rows / pooling_window.rows);
     int out_cols = (cols / pooling_window.columns);
@@ -177,6 +209,7 @@ std::vector<Matrix2D<double>> Gpu::max_pooling(std::vector<double> input, int si
     kernel.setArg(8, DBL_MAX);
     queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(rows/pooling_window.rows, cols/pooling_window.columns, size));
     queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * output.size(), output.data());
+
     std::vector<Matrix2D<double>> result(size, Matrix2D<double>(out_rows, out_cols));
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < out_rows; j++) {
@@ -188,11 +221,17 @@ std::vector<Matrix2D<double>> Gpu::max_pooling(std::vector<double> input, int si
     return result;
 }
 
+/**
+ * Creates the OpenCL context.
+*/
 cl::Context Gpu::make_context() {
     cl::Context context(this->device);
     return context;
 }
 
+/**
+ * Build the provided .cl files.
+*/
 bool Gpu::build_program() {
     cl_int err = program.build();
     if(err != CL_BUILD_SUCCESS){
@@ -203,6 +242,9 @@ bool Gpu::build_program() {
     return true;
 }
 
+/**
+ * Creates the OpenCL program.
+*/
 cl::Program Gpu::make_program() {
     std::vector<std::string> kernels;
     for (std::string source_path : this->source_paths) {
@@ -215,6 +257,9 @@ cl::Program Gpu::make_program() {
     return program;
 }
 
+/**
+ * Gets the OpenCL platform.
+*/
 cl::Platform Gpu::get_platform() {
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -227,6 +272,9 @@ cl::Platform Gpu::get_platform() {
     return platforms.front();
 }
 
+/**
+ * Gets the GPU.
+*/
 cl::Device Gpu::get_default_device(){
     // Search for all the devices on the first platform and check if
     // there are any available.

@@ -6,7 +6,7 @@ __kernel void normalization(__global unsigned char* restrict images,
                             const int size) {
     int id = (get_global_id(2) * get_global_size(0) * get_global_size(1)) + (get_global_id(0) * get_global_size(0)) + get_global_id(1);
     for (int i = 0; i < size; i++) {
-        double value = ((double) images[(i*rows*cols*channels)+(id+1)] / (double) 255);
+        double value = ((((double) images[(i*rows*cols*channels)+(id+1)] / (double) 255)) - 0.5) / 0.5;
         output[(i*rows*cols*channels) + id] = value;
     }
 }

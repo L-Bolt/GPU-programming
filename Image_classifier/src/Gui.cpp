@@ -205,6 +205,7 @@ void Gui::update() {
         }
     }
 
+    // Display the current trained percentage.
     if (this->training) {
         ImGui::Text("Training model... %.2f%% trained", this->cnn->get_training_percentage());
     }

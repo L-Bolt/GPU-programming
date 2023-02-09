@@ -1,12 +1,20 @@
 #include "include/Image.h"
 
 
+/**
+ * Constructor of the Image that takes a vector of uint_8 as input.
+ * Create a matrix that contains the input data in a 3D coordinate system.
+ */
 Image::Image(std::vector<uint8_t> *data) {
     this->classifier = data->at(0);
 
     this->matrix = Matrix3D<uint8_t>(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
 }
 
+/**
+ * Constructor of the Image that takes both a vector of uint_8 as input, as well
+ * as a matrix2D of doubles that are the result of the convolutional layer on the GPU.
+ */
 Image::Image(std::vector<uint8_t> *data, Matrix2D<double>* preprocessed_data) {
     this->classifier = data->at(0);
 
