@@ -1,12 +1,20 @@
 #include "include/Image.h"
 
 
+/**
+ * Constructor of the Image that takes a vector of uint_8 as input.
+ * Create a matrix that contains the input data in a 3D coordinate system.
+ */
 Image::Image(std::vector<uint8_t> *data) {
     this->classifier = data->at(0);
 
     this->matrix = Matrix3D<uint8_t>(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CIFAR_IMAGE_COLOR_CHANNELS, data);
 }
 
+/**
+ * Constructor of the Image that takes both a vector of uint_8 as input, as well
+ * as a matrix2D of doubles that are the result of the convolutional layer on the GPU.
+ */
 Image::Image(std::vector<uint8_t> *data, Matrix2D<double>* preprocessed_data) {
     this->classifier = data->at(0);
 
@@ -35,9 +43,6 @@ cv::Mat Image::array_to_cv_mat() {
     cv::Mat mat(CIFAR_IMAGE_SIZE, CIFAR_IMAGE_SIZE, CV_8UC3);
 
     // Copy the data from the image buffer into the cv::mat matrix.
-    // TODO dit is kaulo aids, miss kan t met iterators. maar cv mat is sws aids.
-    // Ook fking inefficient omdat t alles kopieert. Maar dat moet vgm omdat een cv::mat anders random data heeft.
-    // Deze comment boeit eigenlijk niet omdat we cv mats wss alleen gaan gebruiken bij t displayen van een image.
     for (int i = 0; i < CIFAR_IMAGE_SIZE; i++) {
         for (int j = 0; j < CIFAR_IMAGE_SIZE; j++) {
             for (int k = 0; k < CIFAR_IMAGE_COLOR_CHANNELS; k++) {

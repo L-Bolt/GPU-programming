@@ -22,6 +22,7 @@ Dataset::Dataset(std::string path, Gpu &gpu, Matrix3D<double> &conv_kernel, Shap
 
         std::cout << "\033[1;32mDataset has been read into memory.\033[0m\n" <<std::endl;
 
+        // Create vectors to store the images in the trainiing and testing set.
         this->training_set = std::vector<Image>(this->image_buffer.begin(), this->image_buffer.end() - CIFAR_IMAGES_PER_FILE);
         this->test_set = std::vector<Image>(this->image_buffer.end() - CIFAR_IMAGES_PER_FILE, this->image_buffer.end());
 
@@ -38,12 +39,12 @@ Dataset::Dataset(std::string path, Gpu &gpu, Matrix3D<double> &conv_kernel, Shap
         exit(1);
     }
 
+    // Create vectors to store the labels.
     for (Image &img : this->training_set) {
         std::vector<double> label(CIFAR_CLASSES, 0);
         label[img.get_class()] = 1.0;
         this->labels.push_back(label);
     }
-
     for (Image &img : this->test_set) {
         std::vector<double> test_label(CIFAR_CLASSES, 0);
         test_label[img.get_class()] = 1.0;
@@ -92,6 +93,9 @@ std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffe
     return image_buffer;
 }
 
+/**
+ * Creates an Image object for every image in the dataset.
+*/
 std::vector<Image> Dataset::make_images(std::vector<std::vector<uint8_t>> &buffer, std::vector<Matrix2D<double>> &processed_buffer) {
     std::vector<Image> image_buffer(CIFAR_IMAGE_COUNT);
     for (int i = 0; i < CIFAR_IMAGE_COUNT; i++) {

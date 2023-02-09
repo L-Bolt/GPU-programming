@@ -3,13 +3,14 @@
 
 #include "Matrix.hpp"
 #include "Image.h"
+#include "Gpu.h"
 
 #include <atomic>
 
 
 class CNN {
     public:
-        CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel);
+        CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel, Gpu &gpu);
         ~CNN() = default;
 
         void train(std::vector<Image> &Xtrain,
@@ -46,6 +47,7 @@ class CNN {
         bool trained = false;
         bool validated = false;
         bool stop = false;
+        Gpu gpu;
 };
 
 #endif

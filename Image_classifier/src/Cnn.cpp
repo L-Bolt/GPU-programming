@@ -1,6 +1,10 @@
 #include "include/Cnn.h"
 
-CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel) {
+
+/**
+ * Constructor for the CNN class.
+ */
+CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer_nodes, int output_dim, Matrix3D<double> &conv_kernel, Gpu &gpu) {
 	assert(input_dim.rows > kernel_size.rows && input_dim.columns > kernel_size.columns);
 	assert(input_dim.rows - kernel_size.rows + 1 > pool_size.rows && input_dim.columns - kernel_size.columns + 1 > pool_size.columns);
 
@@ -12,23 +16,36 @@ CNN::CNN(Shape3D input_dim, Shape kernel_size, Shape pool_size, int hidden_layer
 	int x = ((input_dim.rows - kernel_size.rows + 1) / pool_size.rows);			 // output rows of feature vector.
 	int y = ((input_dim.columns - kernel_size.columns + 1) / pool_size.columns); // output cols of feature vector.
 
+	// Generate random starting weights.
 	Matrix2D<double> Weights0(x * y, hidden_layer_nodes, true);
 	Matrix2D<double> Weights1(hidden_layer_nodes, output_dim, true);
 	this->weights.push_back(Weights0);
 	this->weights.push_back(Weights1);
 
+	// Generate random starting biases.
 	Matrix2D<double> Bias0(hidden_layer_nodes, 1, true);
 	Matrix2D<double> Bias1(output_dim, 1, true);
 	this->biases.push_back(Bias0);
 	this->biases.push_back(Bias1);
+
+	this->gpu = gpu;
 }
 
+
+/**
+ * Returns the percentage that indicates how far the network is in its training
+ * process. Used in the GUI.
+ */
 float CNN::get_training_percentage() {
 	int total = this->epochs * this->training_size;
 
 	return (this->iteration / (float) total) * 100.0;
 }
 
+/**
+ * Function used to train the CNN.
+ * Calls the forward- and backward propagation functions and calculates the error.
+ */
 void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Ytrain, double learning_rate, int epochs) {
 	assert(Xtrain.size() == Ytrain.size());
 
@@ -37,25 +54,31 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 	this->trained = false;
 	this->epochs = epochs;
 
+	// Run for every epoch. Usually set in the GUI.
 	for (int epoch = 1; epoch <= epochs; epoch++) {
 		double error = 0.0;
-
 		std::cout << "Running epoch: " << epoch << std::endl;
+
+		// Run for every image in the dataset (50000).
 		for (size_t it = 0; it < Xtrain.size(); it++) {
 			this->iteration = this->iteration + 1;
 
+			// Stop if the GUI closes.
 			if (this->stop) {
 				std::cout << "stopped training" << std::endl;
 				return;
 			}
 
+			// Forward propagate and image.
 			std::vector<std::vector<double>> a;
 			std::vector<std::vector<double>> z;
-
 			forward_propagate(Xtrain[it], a, z);
 
+			// Calculate the error by using the cross entropy function.
 			error += cross_entropy(a.at(1), Ytrain[it]);
 			std::vector<double> dZ2 = np::subtract(a.at(1), Ytrain[it]);
+
+			// Backward propagate an image.
 			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate);
 
 		}
@@ -75,22 +98,26 @@ double CNN::validate(std::vector<Image> &Xval, std::vector<std::vector<double>> 
 	this->validated = false;
 
 	double error = 0;
+	std::vector<std::vector<double>> a;
+	std::vector<std::vector<double>> z;
+
+	// Forward propagate every image on the GPU.
+	gpu.forward_prop(&Xval, &a, &z, &weights.at(0), &weights.at(1), &biases.at(0), &biases.at(1));
 	for (size_t it = 0; it < Xval.size(); it++) {
 		if (this->stop) {
 			return 0.0;
 		}
 
-		std::vector<std::vector<double>> a;
-		std::vector<std::vector<double>> z;
-
-		forward_propagate(Xval[it], a, z);
-		std::vector<double> prediction = a.at(1);
+		std::vector<double> prediction = a.at(1 + (2 * it));
 		int classified = np::get_max_class(prediction);
+
+		// Check if the image is correctly classified.
+		// Add 1 to correctly_classified if it is correct.
 		if (classified == Xval[it].get_class()) {
 			this->correctly_classified++;
 		}
 
-		error += cross_entropy(a.at(1), Yval[it]);
+		error += cross_entropy(a.at(1 + (2 * it)), Yval[it]);
 	}
 
 	std::cout << "Images correctly classified: " << this->correctly_classified << '\n';
@@ -149,6 +176,9 @@ void CNN::forward_propagate(Image &input, std::vector<std::vector<double>> &a, s
 	z.push_back(Z2);
 }
 
+/**
+ * Classify a single Image. Used in the GUI.
+*/
 int CNN::classify(Image &input) {
 	std::vector<std::vector<double>> a;
 	std::vector<std::vector<double>> z;
@@ -160,8 +190,8 @@ int CNN::classify(Image &input) {
 
 /*
  * Compute deltas of each layer and return the same.
- * delta_L: delta of the final layer, computed and passed as argument
- * activations: Output of each layer after applying activation function
+ * a: delta of the final layer, computed and passed as argument
+ * z: Output of each layer after applying activation function
  * Assume that all layers have same activation function except that of final layer.
  * active_fn_der: function pointer for the derivative of activation function,
  * which takes activation of the layer as input

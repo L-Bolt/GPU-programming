@@ -1,6 +1,7 @@
 #include "include/util.h"
 
 
+// Generate a seed for the functions that require a randomness component.
 int seed = time(0);
 std::default_random_engine random_engine(seed);
 
@@ -82,6 +83,9 @@ std::vector<double> np::applyFunction(std::vector<double> &v, double (*active_fn
     return vr;
 }
 
+/**
+ * Normalize a vector.
+ */
 std::vector<double> np::normalize(std::vector<double> &v){
     std::vector<double> vr(v.size());
 
@@ -89,20 +93,25 @@ std::vector<double> np::normalize(std::vector<double> &v){
     for (size_t i = 0; i < v.size(); i++) {
         sum += v.at(i);
     }
-    assert(sum != 0);
 
-    for (size_t i = 0; i < v.size(); i++) {
-        if (sum == 0) {
-            vr.at(i) = 0.0;
-        }
-        else {
-            vr.at(i) = v.at(i) / sum;
+    // Check if the sum is not zero to prevent divide by zero errors.
+    if (sum > 0.0) {
+        for (size_t i = 0; i < v.size(); i++) {
+            if (sum == 0) {
+                vr.at(i) = 0.0;
+            }
+            else {
+                vr.at(i) = v.at(i) / sum;
+            }
         }
     }
 
     return vr;
 }
 
+/**
+ * Multiply every index of v1 by the same index of v2.
+ */
 std::vector<double> np::multiply(std::vector<double> &v1, std::vector<double> &v2){
     assert(v1.size() == v2.size());
 
@@ -114,14 +123,18 @@ std::vector<double> np::multiply(std::vector<double> &v1, std::vector<double> &v
     return vr;
 }
 
+/**
+ * Multiply every index of v1 by val.
+ */
 void np::multiply(std::vector<double> &v1, double val) {
-
     for (size_t i = 0; i < v1.size(); i++){
         v1.at(i) = v1.at(i) * val;
     }
-
 }
 
+/**
+ * Subtract every index of v1 by the same index of v2.
+ */
 std::vector<double> np::subtract(std::vector<double> & v1, std::vector<double> & v2){
 	assert(v1.size() == v2.size());
 
@@ -133,6 +146,9 @@ std::vector<double> np::subtract(std::vector<double> & v1, std::vector<double> &
 	return vr;
 }
 
+/**
+ * Calculate the sum of the vector v.
+ */
 double np::sum(std::vector<double> v1) {
     double sum = 0.0;
 
@@ -143,6 +159,9 @@ double np::sum(std::vector<double> v1) {
     return sum;
 }
 
+/**
+ * Returns the index of the highest value in vector prediction.
+ */
 int np::get_max_class(std::vector<double> &prediction) {
     double max = 0.0;
     int index = 0;
