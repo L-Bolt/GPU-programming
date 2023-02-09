@@ -25,88 +25,111 @@ Gpu::Gpu(std::vector<std::string> source_paths) {
     }
 }
 
-void Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *a, std::vector<std::vector<double>> *z, Matrix2D<double> *weights0, Matrix2D<double> *weights1, Matrix2D<double> *bias0, Matrix2D<double> *bias1) {
+double Gpu::forward_prop(std::vector<Image> *input, std::vector<std::vector<double>> *ytrain_raw, std::vector<std::vector<double>> *a, std::vector<std::vector<double>> *z, Matrix2D<double> *weights0, Matrix2D<double> *weights1, Matrix2D<double> *bias0, Matrix2D<double> *bias1, int out_dim, int hid_nodes, int learning_rate) {
     std::vector<std::vector<double>> flattened_pool(input->size(), std::vector<double>(input->at(1).preprocessed_data.size()));
     for (size_t i = 0; i < input->size(); i++) {
         flattened_pool.at(i) = input->at(i).preprocessed_data;
     }
-    std::vector<double> biases;
-    std::vector<double> biases1;
-    biases = std::vector<double>(bias0->array.begin(), bias0->array.end());
-    biases1 = std::vector<double>(bias1->array.begin(), bias1->array.end());
-    std::vector<std::vector<double>> raw_Z1(input->size(), std::vector<double>(weights0->transpose().dot(flattened_pool[0]).size()));
-    for (size_t j = 0; j < input->size(); j++) {
-        raw_Z1.at(j) = weights0->transpose().dot(flattened_pool.at(j));
+    std::vector<double> flattened_flattened_pool(flattened_pool.size() * flattened_pool.at(0).size());
+    for (auto const &v: flattened_pool) {
+        flattened_flattened_pool.insert(flattened_flattened_pool.end(), v.begin(), v.end());
     }
-    std::vector<double> Z1;
-    for (auto const &v: raw_Z1) {
-        Z1.insert(Z1.end(), v.begin(), v.end());
+    std::vector<double> ytrain;
+    for (auto const &v: *ytrain_raw) {
+        ytrain.insert(ytrain.end(), v.begin(), v.end());
     }
+    std::vector<double> Z1(weights0->transpose().dot(flattened_pool[0]).size());
     std::vector<double> A1(Z1.size());
-    cl::Buffer memBuf(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * biases.size(), biases.data());
+    std::vector<std::vector<double>> A1_2D(input->size(), std::vector<double>(Z1.size()));
+    std::vector<double> Z2(weights1->transpose().dot(A1_2D[0]).size());
+    std::vector<double> A2(Z2.size());
+    std::vector<double> dZ2(Z2.size());
+    std::vector<double> temp(dZ2.size());
+    std::vector<double> temp2(dZ2.size());
+    std::vector<double> temp3(A1_2D.at(0).size());
+    std::vector<double> dW2(out_dim * hid_nodes);
+    std::vector<double> dZ1(weights1->get_rows());
+    std::vector<double> dz_deriv(Z1.size());
+    std::vector<double> temp4(flattened_pool.at(0).size());
+    std::vector<double> dW1(weights1->get_rows() * flattened_pool.at(0).size());
+    std::vector<double> dW1trans(dW1.size());
+    std::vector<double> dW2trans(dW2.size());
+    std::vector<double> weights0_trans(weights0->array.size());
+    std::vector<double> temp5(flattened_pool.at(0).size());
+    std::vector<double> weights1_trans(weights1->array.size());
+    double error;
+    std::vector<double> z_temp(Z2.size());
+    cl::Buffer memBuf1(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * bias0->array.size(), bias0->array.data());
     cl::Buffer memBuf2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * Z1.size(), Z1.data());
     cl::Buffer memBuf3(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * A1.size(), A1.data());
-    cl::Kernel kernel(program, "forward_pass", nullptr);
-    cl::CommandQueue queue(context, device);
-    kernel.setArg(0, memBuf);
-    kernel.setArg(1, memBuf2);
-    kernel.setArg(2, memBuf3);
-    kernel.setArg(3, bias0->get_columns());
-    kernel.setArg(4, (int) raw_Z1.at(0).size());
-    kernel.setArg(5, 0);
-    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange((int) input->size(), (int) raw_Z1.at(0).size()));
-    queue.enqueueReadBuffer(memBuf2, CL_TRUE, 0, sizeof(double) * Z1.size(), Z1.data());
-    queue.enqueueReadBuffer(memBuf3, CL_TRUE, 0, sizeof(double) * A1.size(), A1.data());
-    std::vector<std::vector<double>> A1_2D(raw_Z1.size(), std::vector<double>(raw_Z1.at(0).size()));
-    for (size_t k = 0; k < raw_Z1.size(); k++) {
-        for (size_t l = 0; l < raw_Z1.at(0).size(); l++) {
-            A1_2D.at(k).at(l) = A1.at(l + (k * raw_Z1.at(0).size()));
-        }
-    }
-    std::vector<std::vector<double>> raw_Z2(input->size(), std::vector<double>(weights1->transpose().dot(A1_2D[0]).size()));
-    for (size_t m = 0; m < input->size(); m++) {
-        raw_Z2.at(m) = weights1->transpose().dot(A1_2D.at(m));
-    }
-    std::vector<double> Z2;
-    for (auto const &v: raw_Z2) {
-        Z2.insert(Z2.end(), v.begin(), v.end());
-    }
-    std::vector<double> A2(Z2.size());
-    cl::Buffer memBuf4(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * biases1.size(), biases1.data());
-    cl::Buffer memBuf5(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * Z2.size(), Z2.data());
-    cl::Buffer memBuf6(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * A2.size(), A2.data());
+    cl::Buffer memBuf4(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * dZ2.size(), dZ2.data());
+    cl::Buffer memBuf5(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * ytrain.size(), ytrain.data());
+    cl::Buffer memBuf6(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * temp2.size(), temp2.data());
+    cl::Buffer memBuf7(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * A2.size(), A2.data());
+    cl::Buffer memBuf8(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * dW2.size(), dW2.data());
+    cl::Buffer memBuf9(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * weights1->array.size(), weights1->array.data());
+    cl::Buffer memBuf10(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * dZ1.size(), dZ1.data());
+    cl::Buffer memBuf11(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * dz_deriv.size(), dz_deriv.data());
+    cl::Buffer memBuf12(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * Z2.size(), Z2.data());
+    cl::Buffer memBuf13(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * flattened_flattened_pool.size(), flattened_flattened_pool.data());
+    cl::Buffer memBuf14(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * dW1.size(), dW1.data());
+    cl::Buffer memBuf15(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * dW1trans.size(), dW1trans.data());
+    cl::Buffer memBuf16(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * weights0->array.size(), weights0->array.data());
+    cl::Buffer memBuf17(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * bias1->array.size(), bias1->array.data());
+    cl::Buffer memBuf18(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * dW2trans.size(), dW2trans.data());
+    cl::Buffer memBuf19(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * weights0_trans.size(), weights0_trans.data());
+    cl::Buffer memBuf20(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * temp5.size(), temp5.data());
+    cl::Buffer memBuf21(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * weights1_trans.size(), weights1_trans.data());    
+    cl::Buffer memBuf22(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double), &error);
+    cl::Buffer memBuf23(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(double) * z_temp.size(), z_temp.data());
     cl::Kernel kernel2(program, "forward_pass", nullptr);
     cl::CommandQueue queue2(context, device);
-    kernel2.setArg(0, memBuf4);
-    kernel2.setArg(1, memBuf5);
-    kernel2.setArg(2, memBuf6);
-    kernel2.setArg(3, bias1->get_columns());
-    kernel2.setArg(4, (int) raw_Z2.at(0).size());
-    kernel2.setArg(5, 1);
-    queue2.enqueueNDRangeKernel(kernel2, cl::NullRange, cl::NDRange((int) input->size(),(int) raw_Z2.at(0).size()));
-    queue2.enqueueReadBuffer(memBuf5, CL_TRUE, 0, sizeof(double) * Z2.size(), Z2.data());
-    queue2.enqueueReadBuffer(memBuf6, CL_TRUE, 0, sizeof(double) * A2.size(), A2.data());
-    std::vector<std::vector<double>> A2_2D(raw_Z2.size(), std::vector<double>(raw_Z2.at(0).size()));
-    for (size_t n = 0; n < raw_Z2.size(); n++) {
-        for (size_t o = 0; o < raw_Z2.at(0).size(); o++) {
-            A2_2D.at(n).at(o) = A2.at(o + (n * raw_Z2.at(0).size()));
-        }
-        A2_2D.at(n) = np::normalize(A2_2D.at(n));
-        a->push_back(A1_2D.at(n));
-        a->push_back(A2_2D.at(n));
-    }
-    std::vector<std::vector<double>> Z1_2D(raw_Z1.size(), std::vector<double>(raw_Z1.at(0).size()));
-    std::vector<std::vector<double>> Z2_2D(raw_Z2.size(), std::vector<double>(raw_Z2.at(0).size()));
-    for (size_t p = 0; p < raw_Z1.size(); p++) {
-        for (size_t q = 0; q < raw_Z1.at(0).size(); q++) {
-            Z1_2D.at(p).at(q) = Z1.at(q + (p * raw_Z1.at(0).size()));
-        }
-        for (size_t r = 0; r < raw_Z2.at(0).size(); r++) {
-            Z2_2D.at(p).at(r) = Z2.at(r + (p * raw_Z2.at(0).size()));
-        }
-        z->push_back(Z1_2D.at(p));
-        z->push_back(Z2_2D.at(p));
-    }
+    kernel2.setArg(0, memBuf1);
+    kernel2.setArg(1, memBuf2);
+    kernel2.setArg(2, memBuf3);
+    kernel2.setArg(3, bias0->get_columns());
+    kernel2.setArg(4, (int) Z1.size());
+    kernel2.setArg(5, memBuf4);
+    kernel2.setArg(6, memBuf5);
+    kernel2.setArg(7, memBuf6);
+    kernel2.setArg(8, (int) Z2.size());
+    kernel2.setArg(9, memBuf7);
+    kernel2.setArg(10, memBuf8);
+    kernel2.setArg(11, out_dim);
+    kernel2.setArg(12, hid_nodes);
+    kernel2.setArg(13, learning_rate);
+    kernel2.setArg(14, memBuf9);
+    kernel2.setArg(15, weights1->get_rows());
+    kernel2.setArg(16, weights1->get_columns());
+    kernel2.setArg(17, memBuf10);
+    kernel2.setArg(18, memBuf11);
+    kernel2.setArg(19, memBuf12);
+    kernel2.setArg(20, memBuf13);
+    kernel2.setArg(21, memBuf14);
+    kernel2.setArg(22, (int) flattened_pool.at(0).size());
+    kernel2.setArg(23, memBuf15);
+    kernel2.setArg(24, memBuf16);
+    kernel2.setArg(25, weights0->get_columns());
+    kernel2.setArg(26, memBuf17);
+    kernel2.setArg(27, bias1->get_rows());
+    kernel2.setArg(28, bias1->get_columns());
+    kernel2.setArg(29, memBuf18);
+    kernel2.setArg(30, (int) input->size());
+    kernel2.setArg(31, weights0->get_rows());
+    kernel2.setArg(32, memBuf19);
+    kernel2.setArg(33, memBuf20);
+    kernel2.setArg(34, memBuf21);
+    kernel2.setArg(35, (int) ytrain_raw->at(0).size());
+    kernel2.setArg(36, bias0->get_rows());
+    kernel2.setArg(37, memBuf22);
+    kernel2.setArg(38, memBuf23);
+    queue2.enqueueNDRangeKernel(kernel2, cl::NullRange, cl::NDRange(1));
+    queue2.enqueueReadBuffer(memBuf16, CL_TRUE, 0, sizeof(double) * weights0->array.size(), weights0->array.data());
+    queue2.enqueueReadBuffer(memBuf9, CL_TRUE, 0, sizeof(double) * weights1->array.size(), weights1->array.data());
+    queue2.enqueueReadBuffer(memBuf1, CL_TRUE, 0, sizeof(double) * bias0->array.size(), bias0->array.data());
+    queue2.enqueueReadBuffer(memBuf17, CL_TRUE, 0, sizeof(double) * bias1->array.size(), bias1->array.data());
+    queue2.enqueueReadBuffer(memBuf22, CL_TRUE, 0, sizeof(double), &error);
+    return error;
 }
 
 std::vector<Matrix2D<double>> Gpu::preprocess(std::vector<std::vector<unsigned char>>* images, Matrix3D<double> conv_kernel, int rows, int cols, int channels, Shape &pooling_window, double bias) {

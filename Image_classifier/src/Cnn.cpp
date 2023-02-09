@@ -49,28 +49,7 @@ void CNN::train(std::vector<Image> &Xtrain, std::vector<std::vector<double>> &Yt
 		std::vector<std::vector<double>> test_a;
 		std::vector<std::vector<double>> test_z;
 		
-		gpu.forward_prop(&Xtrain, &a, &z, &weights.at(0), &weights.at(1), &biases.at(0), &biases.at(1));
-		forward_propagate(Xtrain[1], test_a, test_z);
-		for (size_t i = 0; i < z.at(2).size(); i++) {
-			std::cout << (double) z.at(2).at(i) << std::endl;
-		}
-		std::cout << "\n\n\n" << std::endl;
-		for (size_t i = 0; i < test_z.at(0).size(); i++) {
-			std::cout << (double) test_z.at(0).at(i) << std::endl;
-		}
-		for (size_t it = 0; it < Xtrain.size(); it++) {
-			this->iteration = this->iteration + 1;
-
-			if (this->stop) {
-				std::cout << "stopped training" << std::endl;
-				return;
-			}
-
-			error += cross_entropy(a.at(1 + (2*it)), Ytrain[it]);
-			std::vector<double> dZ2 = np::subtract(a.at(1 + (2*it)), Ytrain[it]);
-			back_propagate(dZ2, a, z, Xtrain[it], fns::relu_gradient, learning_rate, it);
-
-		}
+		error = gpu.forward_prop(&Xtrain, &Ytrain, &a, &z, &weights.at(0), &weights.at(1), &biases.at(0), &biases.at(1), this->output_dim, this->hidden_layer_nodes, learning_rate);
 		this->epoch = this->epoch + 1.0;
 		std::cout << "epoch: " << epoch << " error: " << (error / Xtrain.size()) << std::endl;
 	}
