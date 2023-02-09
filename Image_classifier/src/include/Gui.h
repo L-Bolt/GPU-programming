@@ -54,7 +54,7 @@ class Gui {
         std::thread validating_thread;
 
         bool show_another_window = false;
-        bool model_trained = false;
+        // bool model_trained = false;
         bool training = false;
         bool validating = false;
         bool join_train_thread = false;
